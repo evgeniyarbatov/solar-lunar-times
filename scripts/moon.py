@@ -7,6 +7,7 @@ import pytz
 import os
 import csv
 
+DAYS_COUNT = 90
 
 def degrees_to_direction(degrees):
     """Convert degrees to compass direction"""
@@ -58,56 +59,25 @@ def moon_phase_name(observer):
         return "Waning Crescent" if not waxing else "Waxing Crescent"
 
 
-def calculate_period_averages(observer, moon, ref_time, period_type):
-    """Calculate average azimuth and elevation for specified time periods"""
-    if ref_time is None:
-        return "N/A", "N/A"
-    
+def calculate_specific_time_position(observer, moon, date_str, hour, minute=0):
+    """Calculate azimuth and elevation for a specific time"""
     hanoi_tz = pytz.timezone('Asia/Ho_Chi_Minh')
     
     try:
-        if period_type == "evening":
-            # Evening: from sunset to 12am
-            start_time = ref_time
-            end_time = ref_time.replace(hour=23, minute=59, second=59)
-            if end_time < start_time:
-                # If sunset is after midnight, adjust end time to next day
-                end_time = end_time + timedelta(days=1)
-        elif period_type == "morning":
-            # Morning: from sunrise to 7am
-            start_time = ref_time
-            end_time = ref_time.replace(hour=7, minute=0, second=0)
-            if end_time < start_time:
-                # If sunrise is after 7am, adjust end time to next day
-                end_time = end_time + timedelta(days=1)
-        else:
-            return "N/A", "N/A"
+        # Parse the date and set the specific time
+        date_obj = datetime.strptime(date_str, '%Y/%m/%d')
+        specific_time = hanoi_tz.localize(date_obj.replace(hour=hour, minute=minute, second=0))
         
-        # Calculate moon position every 15 minutes during the period
-        current_time = start_time
-        azimuth_sum = 0
-        elevation_sum = 0
-        count = 0
+        # Convert to UTC for ephem calculation
+        utc_time = specific_time.astimezone(pytz.UTC)
+        observer.date = ephem.Date(utc_time)
+        moon.compute(observer)
         
-        while current_time <= end_time:
-            # Convert to UTC for ephem calculation
-            utc_time = current_time.astimezone(pytz.UTC)
-            observer.date = ephem.Date(utc_time)
-            moon.compute(observer)
-            
-            azimuth_sum += math.degrees(moon.az)
-            elevation_sum += math.degrees(moon.alt)
-            count += 1
-            
-            current_time += timedelta(minutes=15)
+        azimuth = math.degrees(moon.az)
+        elevation = math.degrees(moon.alt)
         
-        if count > 0:
-            avg_azimuth = azimuth_sum / count
-            avg_elevation = elevation_sum / count
-            return round(avg_azimuth, 1), round(avg_elevation, 1)
-        else:
-            return "N/A", "N/A"
-            
+        return round(azimuth, 1), round(elevation, 1)
+        
     except Exception as e:
         return "N/A", "N/A"
 
@@ -177,11 +147,11 @@ def calculate_moon_info(date_str):
     except Exception as e:
         moon_set_local = f"Error calculating set time: {e}"
     
-    # Calculate average azimuth and elevation for specified periods
-    evening_avg_azimuth, evening_avg_elevation = calculate_period_averages(
-        observer, moon, sunset_local, "evening")
-    morning_avg_azimuth, morning_avg_elevation = calculate_period_averages(
-        observer, moon, sunrise_local, "morning")
+    # Calculate azimuth and elevation for specific times (10pm and 6am)
+    evening_azimuth, evening_elevation = calculate_specific_time_position(
+        observer, moon, date_str, 22, 0)  # 10pm
+    morning_azimuth, morning_elevation = calculate_specific_time_position(
+        observer, moon, date_str, 6, 0)   # 6am
     
     return {
         'date': date_str,
@@ -190,10 +160,10 @@ def calculate_moon_info(date_str):
         'illumination': illumination,
         'moon_rise': moon_rise_local,
         'moon_set': moon_set_local,
-        'evening_avg_azimuth': evening_avg_azimuth,
-        'evening_avg_elevation': evening_avg_elevation,
-        'morning_avg_azimuth': morning_avg_azimuth,
-        'morning_avg_elevation': morning_avg_elevation
+        'evening_azimuth': evening_azimuth,
+        'evening_elevation': evening_elevation,
+        'morning_azimuth': morning_azimuth,
+        'morning_elevation': morning_elevation
     }
 
 
@@ -206,8 +176,8 @@ def write_to_csv(all_moon_data, filename="data/moon.csv"):
     headers = [
         'date', 'phase_name', 'illumination',
         'moon_rise', 'moon_set',
-        'evening_avg_azimuth', 'evening_avg_elevation', 
-        'morning_avg_azimuth', 'morning_avg_elevation'
+        'evening_azimuth', 'evening_elevation', 
+        'morning_azimuth', 'morning_elevation'
     ]
     
     try:
@@ -231,16 +201,13 @@ def write_to_csv(all_moon_data, filename="data/moon.csv"):
                     'illumination': f"{moon_info['illumination']:.1f}",
                     'moon_rise': moon_rise_str,
                     'moon_set': moon_set_str,
-                    'evening_avg_azimuth': str(moon_info['evening_avg_azimuth']),
-                    'evening_avg_elevation': str(moon_info['evening_avg_elevation']),
-                    'morning_avg_azimuth': str(moon_info['morning_avg_azimuth']),
-                    'morning_avg_elevation': str(moon_info['morning_avg_elevation'])
+                    'evening_azimuth': str(moon_info['evening_azimuth']),
+                    'evening_elevation': str(moon_info['evening_elevation']),
+                    'morning_azimuth': str(moon_info['morning_azimuth']),
+                    'morning_elevation': str(moon_info['morning_elevation'])
                 }
                 
-                writer.writerow(row_data)
-        
-        print(f"\n📁 CSV data written to: {filename}")
-        
+                writer.writerow(row_data)        
     except Exception as e:
         print(f"\n❌ Error writing CSV file: {e}")
 
@@ -248,14 +215,10 @@ def write_to_csv(all_moon_data, filename="data/moon.csv"):
 def main():
     """Main function to calculate moon info for next 30 days"""
     
-    print("Moon Phase Calculator")
-    print("=" * 50)
-    print("Calculating moon phases for next 30 days starting from today")
-    
-    # Generate dates for next 30 days starting from today
+    # Generate dates for next DAYS_COUNT days starting from today
     today = datetime.now()
     dates = []
-    for i in range(30):
+    for i in range(DAYS_COUNT):
         date = today + timedelta(days=i)
         date_str = date.strftime("%Y/%m/%d")
         dates.append(date_str)
@@ -264,47 +227,13 @@ def main():
     all_moon_data = []
     
     for date in dates:
-        print(f"\nDate: {datetime.strptime(date, '%Y/%m/%d').strftime('%B %d, %Y')}")
-        print("-" * 50)
-        
         try:
             moon_info = calculate_moon_info(date)
-            
-            # Store moon data for CSV export
-            all_moon_data.append(moon_info)
-            
-            print(f"Moon Phase: {moon_info['phase_name']}")
-            print(f"Illumination: {moon_info['illumination']:.1f}%")
-            print(f"Phase Fraction: {moon_info['phase']:.3f}")
-            
-            if isinstance(moon_info['moon_rise'], datetime):
-                print(f"Moon Rise: {moon_info['moon_rise'].strftime('%H:%M:%S')} (Hanoi time)")
-            else:
-                print(f"Moon Rise: {moon_info['moon_rise']}")
-                
-            if isinstance(moon_info['moon_set'], datetime):
-                print(f"Moon Set: {moon_info['moon_set'].strftime('%H:%M:%S')} (Hanoi time)")
-            else:
-                print(f"Moon Set: {moon_info['moon_set']}")
-            
-            print(f"Evening Avg (sunset-12am): Az {moon_info['evening_avg_azimuth']}°, El {moon_info['evening_avg_elevation']}°")
-            print(f"Morning Avg (sunrise-7am): Az {moon_info['morning_avg_azimuth']}°, El {moon_info['morning_avg_elevation']}°")
-                
+            all_moon_data.append(moon_info)       
         except Exception as e:
             print(f"Error calculating moon info: {e}")
     
-    # Write all moon data to CSV
     write_to_csv(all_moon_data)
-
 
 if __name__ == "__main__":
     main()
-    
-    print("\n" + "="*50)
-    print("Installation note:")
-    print("This script requires the 'ephem' and 'pytz' libraries.")
-    print("Install them with: pip install pyephem pytz")
-    print(f"\nLocation coordinates: {os.environ.get('LATITUDE')}°N, {os.environ.get('LONGITUDE')}°E")
-    print("All times displayed in Hanoi timezone (UTC+7)")
-    print(f"Data generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} (UTC+7)")
-    print("="*50)
