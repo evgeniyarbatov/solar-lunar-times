@@ -14,12 +14,10 @@ install: venv
 	pip install --disable-pip-version-check -q -r requirements.txt
 
 sun:
-	@mkdir -p data
 	source $(VENV_PATH)/bin/activate && \
 	LATITUDE=$(LATITUDE) LONGITUDE=$(LONGITUDE) python scripts/sun.py
 
 moon:
-	@mkdir -p data
 	source $(VENV_PATH)/bin/activate && \
 	LATITUDE=$(LATITUDE) LONGITUDE=$(LONGITUDE) python scripts/moon.py
 
