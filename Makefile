@@ -18,11 +18,11 @@ install: venv
 	@source $(VENV_PATH)/bin/activate && \
 	pip install --disable-pip-version-check -q -r requirements.txt
 
-sun:
+sun: install
 	source $(VENV_PATH)/bin/activate && \
 	LATITUDE=$(LATITUDE) LONGITUDE=$(LONGITUDE) python scripts/sun.py
 
-moon:
+moon: install
 	source $(VENV_PATH)/bin/activate && \
 	LATITUDE=$(LATITUDE) LONGITUDE=$(LONGITUDE) python scripts/moon.py
 
