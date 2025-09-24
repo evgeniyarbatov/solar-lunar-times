@@ -101,18 +101,6 @@ function App() {
 
   return (
     <div className="app">
-      <div className="navigation">
-        <button onClick={goToPrevious} disabled={currentIndex === 0}>
-          ← Previous
-        </button>
-        <button onClick={goToToday} className={isToday ? 'active' : ''}>
-          Today
-        </button>
-        <button onClick={goToNext} disabled={currentIndex === sunData.length - 1}>
-          Next →
-        </button>
-      </div>
-
       <div className={`day-card ${isToday ? 'today' : ''}`}>
         <div className="date">
           <h3>{sunRow.date}</h3>
@@ -122,6 +110,18 @@ function App() {
         <div className="times-grid">
           <div className="sun-times">
             <h4>☀️ Solar Times</h4>
+            <div className="time-row">
+              <span>Astronomical Dawn:</span>
+              <span>{sunRow.astronomical_dawn}</span>
+            </div>
+            <div className="time-row">
+              <span>Nautical Dawn:</span>
+              <span>{sunRow.nautical_dawn}</span>
+            </div>
+            <div className="time-row">
+              <span>Civil Dawn:</span>
+              <span>{sunRow.civil_dawn}</span>
+            </div>
             <div className="time-row">
               <span>Sunrise:</span>
               <span>{sunRow.sunrise_geometric}</span>
@@ -135,16 +135,20 @@ function App() {
               <span>{sunRow.sunset_geometric}</span>
             </div>
             <div className="time-row">
-              <span>Day Length:</span>
-              <span>{sunRow.day_length}</span>
-            </div>
-            <div className="time-row">
-              <span>Civil Dawn:</span>
-              <span>{sunRow.civil_dawn}</span>
-            </div>
-            <div className="time-row">
               <span>Civil Dusk:</span>
               <span>{sunRow.civil_dusk}</span>
+            </div>
+            <div className="time-row">
+              <span>Nautical Dusk:</span>
+              <span>{sunRow.nautical_dusk}</span>
+            </div>
+            <div className="time-row">
+              <span>Astronomical Dusk:</span>
+              <span>{sunRow.astronomical_dusk}</span>
+            </div>
+            <div className="time-row">
+              <span>Day Length:</span>
+              <span>{sunRow.day_length}</span>
             </div>
           </div>
 
@@ -172,6 +176,18 @@ function App() {
             )}
           </div>
         </div>
+      </div>
+
+      <div className="navigation">
+        <button onClick={goToPrevious} disabled={currentIndex === 0}>
+          ← Previous
+        </button>
+        <button onClick={goToToday} className={isToday ? 'active' : ''}>
+          Today
+        </button>
+        <button onClick={goToNext} disabled={currentIndex === sunData.length - 1}>
+          Next →
+        </button>
       </div>
     </div>
   )

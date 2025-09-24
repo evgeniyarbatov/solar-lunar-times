@@ -32,7 +32,7 @@ body {
 .navigation {
   display: flex;
   gap: 1rem;
-  margin-bottom: 2rem;
+  margin-top: 2rem;
 }
 
 .navigation button {
@@ -69,6 +69,8 @@ body {
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   border: 1px solid #e9ecef;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  max-width: 800px;
 }
 
 .day-card:hover {
