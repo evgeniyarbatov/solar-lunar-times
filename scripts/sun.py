@@ -166,12 +166,6 @@ def main():
     
     # Write all results to CSV
     write_to_csv(all_results)
-    
-    print("TWILIGHT DEFINITIONS:")
-    print("• Astronomical: Sun 18° below horizon (darkest)")
-    print("• Nautical: Sun 12° below horizon (navigation possible)")
-    print("• Civil: Sun 6° below horizon (outdoor activities possible)")
-    print("• Geometric: Sun at horizon (actual sunrise/sunset)")
 
 if __name__ == "__main__": 
     main()

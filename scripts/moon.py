@@ -59,27 +59,6 @@ def moon_phase_name(observer):
         return "Waning Crescent" if not waxing else "Waxing Crescent"
 
 
-def calculate_specific_time_position(observer, moon, date_str, hour, minute=0):
-    """Calculate azimuth and elevation for a specific time"""
-    hanoi_tz = pytz.timezone('Asia/Ho_Chi_Minh')
-    
-    try:
-        # Parse the date and set the specific time
-        date_obj = datetime.strptime(date_str, '%Y/%m/%d')
-        specific_time = hanoi_tz.localize(date_obj.replace(hour=hour, minute=minute, second=0))
-        
-        # Convert to UTC for ephem calculation
-        utc_time = specific_time.astimezone(pytz.UTC)
-        observer.date = ephem.Date(utc_time)
-        moon.compute(observer)
-        
-        azimuth = math.degrees(moon.az)
-        elevation = math.degrees(moon.alt)
-        
-        return round(azimuth, 1), round(elevation, 1)
-        
-    except Exception as e:
-        return "N/A", "N/A"
 
 
 def calculate_moon_info(date_str):
@@ -147,23 +126,13 @@ def calculate_moon_info(date_str):
     except Exception as e:
         moon_set_local = f"Error calculating set time: {e}"
     
-    # Calculate azimuth and elevation for specific times (10pm and 6am)
-    evening_azimuth, evening_elevation = calculate_specific_time_position(
-        observer, moon, date_str, 22, 0)  # 10pm
-    morning_azimuth, morning_elevation = calculate_specific_time_position(
-        observer, moon, date_str, 6, 0)   # 6am
-    
     return {
         'date': date_str,
         'phase': phase,
         'phase_name': phase_name,
-        'illumination': illumination,
+        'illumination': round(illumination),
         'moon_rise': moon_rise_local,
-        'moon_set': moon_set_local,
-        'evening_azimuth': evening_azimuth,
-        'evening_elevation': evening_elevation,
-        'morning_azimuth': morning_azimuth,
-        'morning_elevation': morning_elevation
+        'moon_set': moon_set_local
     }
 
 
@@ -175,9 +144,7 @@ def write_to_csv(all_moon_data, filename="data/moon.csv"):
     # Define CSV headers
     headers = [
         'date', 'phase_name', 'illumination',
-        'moon_rise', 'moon_set',
-        'evening_azimuth', 'evening_elevation', 
-        'morning_azimuth', 'morning_elevation'
+        'moon_rise', 'moon_set'
     ]
     
     try:
@@ -198,13 +165,9 @@ def write_to_csv(all_moon_data, filename="data/moon.csv"):
                 row_data = {
                     'date': moon_info['date'],
                     'phase_name': moon_info['phase_name'],
-                    'illumination': f"{moon_info['illumination']:.1f}",
+                    'illumination': str(moon_info['illumination']),
                     'moon_rise': moon_rise_str,
-                    'moon_set': moon_set_str,
-                    'evening_azimuth': str(moon_info['evening_azimuth']),
-                    'evening_elevation': str(moon_info['evening_elevation']),
-                    'morning_azimuth': str(moon_info['morning_azimuth']),
-                    'morning_elevation': str(moon_info['morning_elevation'])
+                    'moon_set': moon_set_str
                 }
                 
                 writer.writerow(row_data)        
