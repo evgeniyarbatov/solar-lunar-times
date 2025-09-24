@@ -1,3 +1,8 @@
+SHELL := /bin/bash
+
+SITE_DIR = site
+TERRAFORM_DIR = terraform
+
 PROJECT_NAME := $(shell basename $(PWD))
 VENV_PATH = ~/.venv/$(PROJECT_NAME)
 
@@ -21,4 +26,7 @@ moon:
 	source $(VENV_PATH)/bin/activate && \
 	LATITUDE=$(LATITUDE) LONGITUDE=$(LONGITUDE) python scripts/moon.py
 
-
+deploy:
+	cd $(SITE_DIR) && npm install --force && npm run build
+	cd $(TERRAFORM_DIR) && terraform init -reconfigure -input=false && \
+	terraform apply -auto-approve
