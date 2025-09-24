@@ -1,0 +1,2 @@
+- Build lightweight static site to display sun and moon information for today / scroll to any day
+- Use airflow scripts to regularly update the static site

@@ -136,7 +136,7 @@ def calculate_moon_info(date_str):
     }
 
 
-def write_to_csv(all_moon_data, filename="data/moon.csv"):
+def write_to_csv(all_moon_data, filename="site/public/moon.csv"):
     """Write all moon data to a CSV file"""
     if not all_moon_data:
         return

@@ -93,7 +93,7 @@ def calculate_sun_times(observer, date, timezone):
     
     return results
 
-def write_to_csv(all_results, filename="data/sun.csv"):
+def write_to_csv(all_results, filename="site/public/sun.csv"):
     """Write all sun time results to a CSV file"""
     if not all_results:
         return
