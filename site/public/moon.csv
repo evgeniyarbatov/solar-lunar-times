@@ -1,12 +1,4 @@
 date,phase_name,illumination,moon_rise,moon_set
-2025/09/24,Waxing Crescent,5,07:35:25,19:10:13
-2025/09/25,Waxing Crescent,9,08:26:40,19:45:26
-2025/09/26,Waxing Crescent,16,09:19:14,20:24:06
-2025/09/27,Waxing Crescent,23,10:13:01,21:07:05
-2025/09/28,Waxing Gibbous,32,11:07:20,21:54:47
-2025/09/29,Waxing Gibbous,41,12:01:00,22:47:01
-2025/09/30,First Quarter,50,12:52:35,23:42:52
-2025/10/01,Waxing Gibbous,60,13:41:01,00:40:57
 2025/10/02,Waxing Gibbous,70,14:25:50,01:39:57
 2025/10/03,Waxing Crescent,79,15:07:17,02:39:07
 2025/10/04,Waxing Crescent,87,15:46:13,03:38:19
@@ -89,3 +81,11 @@ date,phase_name,illumination,moon_rise,moon_set
 2025/12/20,New Moon,0,07:27:56,17:24:35
 2025/12/21,Waxing Crescent,1,07:27:55,18:19:36
 2025/12/22,Waxing Crescent,4,08:15:04,19:15:52
+2025/12/23,Waxing Crescent,8,08:58:06,20:11:59
+2025/12/24,Waxing Crescent,14,09:37:21,21:07:14
+2025/12/25,Waxing Crescent,22,10:13:42,22:01:42
+2025/12/26,Waxing Gibbous,31,10:48:20,22:56:04
+2025/12/27,Waxing Gibbous,42,11:22:34,23:51:24
+2025/12/28,First Quarter,53,11:57:55,00:49:04
+2025/12/29,Waxing Gibbous,64,12:36:05,01:50:18
+2025/12/30,Waxing Gibbous,74,13:18:56,02:55:47

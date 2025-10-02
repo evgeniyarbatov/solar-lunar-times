@@ -38,9 +38,11 @@ def calculate_sun_times(observer, date, timezone):
         sunrise = observer.next_rising(sun)
         sunset = observer.next_setting(sun)
         
-        # Convert to local timezone
-        sunrise_local = timezone.localize(datetime(*ephem.localtime(sunrise).timetuple()[:6]))
-        sunset_local = timezone.localize(datetime(*ephem.localtime(sunset).timetuple()[:6]))
+        # Convert from UTC to local timezone
+        sunrise_utc = sunrise.datetime().replace(tzinfo=pytz.utc)
+        sunset_utc = sunset.datetime().replace(tzinfo=pytz.utc)
+        sunrise_local = sunrise_utc.astimezone(timezone)
+        sunset_local = sunset_utc.astimezone(timezone)
         
         results['sunrise_geometric'] = sunrise_local
         results['sunset_geometric'] = sunset_local
@@ -53,8 +55,8 @@ def calculate_sun_times(observer, date, timezone):
         civil_dawn = observer.next_rising(sun, use_center=True)
         civil_dusk = observer.next_setting(sun, use_center=True)
         
-        results['civil_dawn'] = timezone.localize(datetime(*ephem.localtime(civil_dawn).timetuple()[:6]))
-        results['civil_dusk'] = timezone.localize(datetime(*ephem.localtime(civil_dusk).timetuple()[:6]))
+        results['civil_dawn'] = civil_dawn.datetime().replace(tzinfo=pytz.utc).astimezone(timezone)
+        results['civil_dusk'] = civil_dusk.datetime().replace(tzinfo=pytz.utc).astimezone(timezone)
         
         # Reset observer date
         observer.date = date
@@ -64,8 +66,8 @@ def calculate_sun_times(observer, date, timezone):
         nautical_dawn = observer.next_rising(sun, use_center=True)
         nautical_dusk = observer.next_setting(sun, use_center=True)
         
-        results['nautical_dawn'] = timezone.localize(datetime(*ephem.localtime(nautical_dawn).timetuple()[:6]))
-        results['nautical_dusk'] = timezone.localize(datetime(*ephem.localtime(nautical_dusk).timetuple()[:6]))
+        results['nautical_dawn'] = nautical_dawn.datetime().replace(tzinfo=pytz.utc).astimezone(timezone)
+        results['nautical_dusk'] = nautical_dusk.datetime().replace(tzinfo=pytz.utc).astimezone(timezone)
         
         # Reset observer date
         observer.date = date
@@ -75,14 +77,14 @@ def calculate_sun_times(observer, date, timezone):
         astronomical_dawn = observer.next_rising(sun, use_center=True)
         astronomical_dusk = observer.next_setting(sun, use_center=True)
         
-        results['astronomical_dawn'] = timezone.localize(datetime(*ephem.localtime(astronomical_dawn).timetuple()[:6]))
-        results['astronomical_dusk'] = timezone.localize(datetime(*ephem.localtime(astronomical_dusk).timetuple()[:6]))
+        results['astronomical_dawn'] = astronomical_dawn.datetime().replace(tzinfo=pytz.utc).astimezone(timezone)
+        results['astronomical_dusk'] = astronomical_dusk.datetime().replace(tzinfo=pytz.utc).astimezone(timezone)
         
         # Reset observer date and calculate solar noon
         observer.date = date
         observer.horizon = '0'
         solar_noon = observer.next_transit(sun)
-        results['solar_noon'] = timezone.localize(datetime(*ephem.localtime(solar_noon).timetuple()[:6]))
+        results['solar_noon'] = solar_noon.datetime().replace(tzinfo=pytz.utc).astimezone(timezone)
         
     except ephem.CircumpolarError:
         print("Sun is circumpolar (always above or below horizon)")
