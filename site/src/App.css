@@ -79,7 +79,6 @@ body {
 }
 
 .day-card.today {
-  border-left: 4px solid #007bff;
   background: linear-gradient(135deg, #fff 0%, #f8f9ff 100%);
 }
 
