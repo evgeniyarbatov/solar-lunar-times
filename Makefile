@@ -16,12 +16,10 @@ SHELL := /bin/bash
 SITE_DIR = site
 TERRAFORM_DIR = terraform
 
-
 LATITUDE = 20.99483745161213
 LONGITUDE = 105.86796789515121
 
 all: moon sun
-
 
 	pip install --disable-pip-version-check -q -r requirements.txt
 
