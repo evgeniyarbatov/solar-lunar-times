@@ -35,3 +35,6 @@ deploy:
 	cd $(SITE_DIR) && npm install --force && npm run build
 	cd $(TERRAFORM_DIR) && terraform init -reconfigure -input=false && \
 	terraform apply -auto-approve
+
+cleanvenv:
+	@rm -rf .venv
