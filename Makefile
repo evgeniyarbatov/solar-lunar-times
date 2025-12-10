@@ -37,4 +37,4 @@ deploy:
 	terraform apply -auto-approve
 
 cleanvenv:
-	@rm -rf .venv
+	@rm -rf $(VENV_PATH)
