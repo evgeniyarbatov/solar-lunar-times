@@ -9,10 +9,27 @@ import csv
 
 DAYS_COUNT = 90
 
+
 def degrees_to_direction(degrees):
     """Convert degrees to compass direction"""
-    directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
-                 "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+    directions = [
+        "N",
+        "NNE",
+        "NE",
+        "ENE",
+        "E",
+        "ESE",
+        "SE",
+        "SSE",
+        "S",
+        "SSW",
+        "SW",
+        "WSW",
+        "W",
+        "WNW",
+        "NW",
+        "NNW",
+    ]
     index = int((degrees + 11.25) / 22.5) % 16
     return directions[index]
 
@@ -59,31 +76,29 @@ def moon_phase_name(observer):
         return "Waning Crescent" if not waxing else "Waxing Crescent"
 
 
-
-
 def calculate_moon_info(date_str):
     """Calculate moon information for a given date"""
-    
+
     # Set up Hanoi timezone
-    hanoi_tz = pytz.timezone('Asia/Ho_Chi_Minh')
-    
+    hanoi_tz = pytz.timezone("Asia/Ho_Chi_Minh")
+
     # Set location
     observer = ephem.Observer()
-    observer.lat = os.environ.get('LATITUDE')
-    observer.lon = os.environ.get('LONGITUDE')
+    observer.lat = os.environ.get("LATITUDE")
+    observer.lon = os.environ.get("LONGITUDE")
 
     # Set date
     observer.date = date_str
-    
+
     # Create moon and sun objects
     moon = ephem.Moon(observer)
     sun = ephem.Sun(observer)
-    
+
     # Calculate moon phase & illumination
     phase = moon.moon_phase
     phase_name = moon_phase_name(observer)
     illumination = phase * 100
-    
+
     # Calculate sunrise and sunset times
     try:
         sunrise = observer.next_rising(sun, start=observer.date)
@@ -94,7 +109,7 @@ def calculate_moon_info(date_str):
         sunrise_local = None
     except Exception as e:
         sunrise_local = None
-    
+
     try:
         sunset = observer.next_setting(sun, start=observer.date)
         sunset_utc = ephem.Date(sunset).datetime()
@@ -104,7 +119,7 @@ def calculate_moon_info(date_str):
         sunset_local = None
     except Exception as e:
         sunset_local = None
-    
+
     # Calculate moon rise and set times
     try:
         moon_rise = observer.next_rising(ephem.Moon(), start=observer.date)
@@ -115,7 +130,7 @@ def calculate_moon_info(date_str):
         moon_rise_local = "Moon doesn't rise today"
     except Exception as e:
         moon_rise_local = f"Error calculating rise time: {e}"
-    
+
     try:
         moon_set = observer.next_setting(ephem.Moon(), start=observer.date)
         moon_set_utc = ephem.Date(moon_set).datetime()
@@ -125,14 +140,14 @@ def calculate_moon_info(date_str):
         moon_set_local = "Moon doesn't set today"
     except Exception as e:
         moon_set_local = f"Error calculating set time: {e}"
-    
+
     return {
-        'date': date_str,
-        'phase': phase,
-        'phase_name': phase_name,
-        'illumination': round(illumination),
-        'moon_rise': moon_rise_local,
-        'moon_set': moon_set_local
+        "date": date_str,
+        "phase": phase,
+        "phase_name": phase_name,
+        "illumination": round(illumination),
+        "moon_rise": moon_rise_local,
+        "moon_set": moon_set_local,
     }
 
 
@@ -140,44 +155,45 @@ def write_to_csv(all_moon_data, filename="site/public/moon.csv"):
     """Write all moon data to a CSV file"""
     if not all_moon_data:
         return
-    
+
     # Define CSV headers
-    headers = [
-        'date', 'phase_name', 'illumination',
-        'moon_rise', 'moon_set'
-    ]
-    
+    headers = ["date", "phase_name", "illumination", "moon_rise", "moon_set"]
+
     try:
-        with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
+        with open(filename, "w", newline="", encoding="utf-8") as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=headers)
             writer.writeheader()
-            
+
             for moon_info in all_moon_data:
                 # Format times as strings if they are datetime objects
-                moon_rise_str = (moon_info['moon_rise'].strftime('%H:%M:%S') 
-                               if isinstance(moon_info['moon_rise'], datetime) 
-                               else str(moon_info['moon_rise']))
-                
-                moon_set_str = (moon_info['moon_set'].strftime('%H:%M:%S') 
-                              if isinstance(moon_info['moon_set'], datetime) 
-                              else str(moon_info['moon_set']))
-                
+                moon_rise_str = (
+                    moon_info["moon_rise"].strftime("%H:%M:%S")
+                    if isinstance(moon_info["moon_rise"], datetime)
+                    else str(moon_info["moon_rise"])
+                )
+
+                moon_set_str = (
+                    moon_info["moon_set"].strftime("%H:%M:%S")
+                    if isinstance(moon_info["moon_set"], datetime)
+                    else str(moon_info["moon_set"])
+                )
+
                 row_data = {
-                    'date': moon_info['date'],
-                    'phase_name': moon_info['phase_name'],
-                    'illumination': str(moon_info['illumination']),
-                    'moon_rise': moon_rise_str,
-                    'moon_set': moon_set_str
+                    "date": moon_info["date"],
+                    "phase_name": moon_info["phase_name"],
+                    "illumination": str(moon_info["illumination"]),
+                    "moon_rise": moon_rise_str,
+                    "moon_set": moon_set_str,
                 }
-                
-                writer.writerow(row_data)        
+
+                writer.writerow(row_data)
     except Exception as e:
         print(f"\n❌ Error writing CSV file: {e}")
 
 
 def main():
     """Main function to calculate moon info for next 30 days"""
-    
+
     # Generate dates for next DAYS_COUNT days starting from today
     today = datetime.now()
     dates = []
@@ -185,18 +201,19 @@ def main():
         date = today + timedelta(days=i)
         date_str = date.strftime("%Y/%m/%d")
         dates.append(date_str)
-    
+
     # Collect all moon data for CSV export
     all_moon_data = []
-    
+
     for date in dates:
         try:
             moon_info = calculate_moon_info(date)
-            all_moon_data.append(moon_info)       
+            all_moon_data.append(moon_info)
         except Exception as e:
             print(f"Error calculating moon info: {e}")
-    
+
     write_to_csv(all_moon_data)
+
 
 if __name__ == "__main__":
     main()
