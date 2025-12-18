@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import ephem
-import math
 from datetime import datetime, timedelta
 import pytz
 import os
