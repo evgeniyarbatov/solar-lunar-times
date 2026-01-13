@@ -1,5 +1,2 @@
 pytz
 pyephem
--e 
-black
-flake8

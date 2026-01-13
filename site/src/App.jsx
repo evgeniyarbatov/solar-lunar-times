@@ -98,12 +98,17 @@ function App() {
   const sunRow = sunData[currentIndex]
   const moonRow = moonData[currentIndex]
   const isToday = currentIndex === todayIndex
+  const formattedDate = new Date(sunRow.date.replace(/\//g, '-')).toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  })
 
   return (
     <div className="app">
       <div className={`day-card ${isToday ? 'today' : ''}`}>
         <div className="date">
-          <h3>{sunRow.date}</h3>
+          <h3>{formattedDate}</h3>
           {isToday && <span className="today-badge">Today</span>}
         </div>
 
