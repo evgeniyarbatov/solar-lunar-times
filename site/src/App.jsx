@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import './App.css'
+import { parseCSV, findDateIndex, formatDisplayDate, getDateKey } from './dataUtils'
 
 function App() {
   const [sunData, setSunData] = useState([])
@@ -19,41 +20,15 @@ function App() {
         const sunText = await sunResponse.text()
         const moonText = await moonResponse.text()
 
-        const parseSunCSV = (csv) => {
-          const lines = csv.trim().split(/\r?\n/)
-          const headers = lines[0].split(',').map(h => h.trim())
-          return lines.slice(1).map(line => {
-            const values = line.split(',')
-            const obj = {}
-            headers.forEach((header, index) => {
-              obj[header] = values[index]?.trim()
-            })
-            return obj
-          })
-        }
-
-        const parseMoonCSV = (csv) => {
-          const lines = csv.trim().split(/\r?\n/)
-          const headers = lines[0].split(',').map(h => h.trim())
-          return lines.slice(1).map(line => {
-            const values = line.split(',')
-            const obj = {}
-            headers.forEach((header, index) => {
-              obj[header] = values[index]?.trim()
-            })
-            return obj
-          })
-        }
-
-        const sunParsed = parseSunCSV(sunText)
-        const moonParsed = parseMoonCSV(moonText)
+        const sunParsed = parseCSV(sunText)
+        const moonParsed = parseCSV(moonText)
 
         setSunData(sunParsed)
         setMoonData(moonParsed)
 
         // Find today's index
-        const today = new Date().toISOString().split('T')[0].replace(/-/g, '/')
-        const index = sunParsed.findIndex(row => row.date === today)
+        const today = getDateKey(new Date())
+        const index = findDateIndex(sunParsed, today)
         if (index !== -1) {
           setTodayIndex(index)
           setCurrentIndex(index)
@@ -98,61 +73,56 @@ function App() {
   const sunRow = sunData[currentIndex]
   const moonRow = moonData[currentIndex]
   const isToday = currentIndex === todayIndex
-  const formattedDate = new Date(sunRow.date.replace(/\//g, '-')).toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
-  })
+  const formattedDate = formatDisplayDate(sunRow.date)
 
   return (
     <div className="app">
       <div className={`day-card ${isToday ? 'today' : ''}`}>
         <div className="date">
           <h3>{formattedDate}</h3>
-          {isToday && <span className="today-badge">Today</span>}
         </div>
 
         <div className="times-grid">
           <div className="sun-times">
             <h4>☀️ Solar Times</h4>
             <div className="time-row">
-              <span>Astronomical Dawn:</span>
+              <span>Astronomical Dawn</span>
               <span>{sunRow.astronomical_dawn}</span>
             </div>
             <div className="time-row">
-              <span>Nautical Dawn:</span>
+              <span>Nautical Dawn</span>
               <span>{sunRow.nautical_dawn}</span>
             </div>
             <div className="time-row">
-              <span>Civil Dawn:</span>
+              <span>Civil Dawn</span>
               <span>{sunRow.civil_dawn}</span>
             </div>
             <div className="time-row">
-              <span>Sunrise:</span>
+              <span>Sunrise</span>
               <span>{sunRow.sunrise_geometric}</span>
             </div>
             <div className="time-row">
-              <span>Solar Noon:</span>
+              <span>Solar Noon</span>
               <span>{sunRow.solar_noon}</span>
             </div>
             <div className="time-row">
-              <span>Sunset:</span>
+              <span>Sunset</span>
               <span>{sunRow.sunset_geometric}</span>
             </div>
             <div className="time-row">
-              <span>Civil Dusk:</span>
+              <span>Civil Dusk</span>
               <span>{sunRow.civil_dusk}</span>
             </div>
             <div className="time-row">
-              <span>Nautical Dusk:</span>
+              <span>Nautical Dusk</span>
               <span>{sunRow.nautical_dusk}</span>
             </div>
             <div className="time-row">
-              <span>Astronomical Dusk:</span>
+              <span>Astronomical Dusk</span>
               <span>{sunRow.astronomical_dusk}</span>
             </div>
             <div className="time-row">
-              <span>Day Length:</span>
+              <span>Day Length</span>
               <span>{sunRow.day_length}</span>
             </div>
           </div>
@@ -162,19 +132,19 @@ function App() {
             {moonRow && (
               <>
                 <div className="time-row">
-                  <span>Phase:</span>
+                  <span>Phase</span>
                   <span>{moonRow.phase_name}</span>
                 </div>
                 <div className="time-row">
-                  <span>Illumination:</span>
+                  <span>Illumination</span>
                   <span>{moonRow.illumination}%</span>
                 </div>
                 <div className="time-row">
-                  <span>Moonrise:</span>
+                  <span>Moonrise</span>
                   <span>{moonRow.moon_rise}</span>
                 </div>
                 <div className="time-row">
-                  <span>Moonset:</span>
+                  <span>Moonset</span>
                   <span>{moonRow.moon_set}</span>
                 </div>
               </>

@@ -1,9 +1,16 @@
 terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.0"
+    }
+  }
+
   backend "s3" {
-    encrypt        = true
-    bucket         = "arbatov-terraform-state"
-    dynamodb_table = "arbatov-me-tf-state-lock"
-    key            = "solar-lunar-times-v2.tfstate"
-    region         = "ap-southeast-1"
+    encrypt      = true
+    bucket       = "arbatov-terraform-state"
+    use_lockfile = true
+    key          = "solar-lunar-times-v2.tfstate"
+    region       = "ap-southeast-1"
   }
 }
