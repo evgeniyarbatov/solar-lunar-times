@@ -1,29 +1,32 @@
 import { describe, it, expect } from 'vitest'
-import { parseCSV, getDateKey, findDateIndex } from './dataUtils'
+import {
+  formatTime,
+  formatDayLength,
+  getDateKey,
+  formatDisplayDate
+} from './dataUtils'
 
 describe('dataUtils', () => {
-  it('parses CSV into trimmed objects', () => {
-    const csv = 'date, sunrise\n2025/01/01, 07:12\n2025/01/02, 07:11'
-    const result = parseCSV(csv)
+  it('formats time values', () => {
+    const date = new Date(2024, 0, 1, 9, 5, 2)
 
-    expect(result).toEqual([
-      { date: '2025/01/01', sunrise: '07:12' },
-      { date: '2025/01/02', sunrise: '07:11' }
-    ])
+    expect(formatTime(date)).toBe('09:05:02')
+    expect(formatTime(null)).toBe('—')
   })
 
-  it('builds the expected date key', () => {
-    const date = new Date('2025-01-13T09:30:00.000Z')
-    expect(getDateKey(date)).toBe('2025/01/13')
+  it('formats day length values', () => {
+    const start = new Date(2024, 0, 1, 6, 0, 0)
+    const end = new Date(2024, 0, 1, 18, 30, 15)
+
+    expect(formatDayLength(start, end)).toBe('12:30:15')
+    expect(formatDayLength(null, end)).toBe('—')
   })
 
-  it('finds the row index for a date key', () => {
-    const rows = [
-      { date: '2025/01/12' },
-      { date: '2025/01/13' },
-      { date: '2025/01/14' }
-    ]
+  it('builds date keys and display labels', () => {
+    const date = new Date(2024, 0, 5)
+    const key = getDateKey(date)
 
-    expect(findDateIndex(rows, '2025/01/13')).toBe(1)
+    expect(key).toBe('2024/01/05')
+    expect(formatDisplayDate(key)).toBe('January 5, 2024')
   })
 })
