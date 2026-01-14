@@ -1,55 +1,146 @@
 import { useState, useEffect } from 'react'
+import SunCalc from 'suncalc'
 import './App.css'
-import { parseCSV, findDateIndex, formatDisplayDate, getDateKey } from './dataUtils'
+import {
+  formatDisplayDate,
+  formatTime,
+  formatDayLength,
+  getDateKey
+} from './dataUtils'
+
+const DAYS_COUNT = 90
+
+const getMoonPhaseName = (phase) => {
+  const epsilon = 0.03
+
+  if (phase < epsilon || phase > 1 - epsilon) return 'New Moon'
+  if (Math.abs(phase - 0.25) < epsilon) return 'First Quarter'
+  if (Math.abs(phase - 0.5) < epsilon) return 'Full Moon'
+  if (Math.abs(phase - 0.75) < epsilon) return 'Last Quarter'
+  if (phase < 0.25) return 'Waxing Crescent'
+  if (phase < 0.5) return 'Waxing Gibbous'
+  if (phase < 0.75) return 'Waning Gibbous'
+  return 'Waning Crescent'
+}
+
+const buildRows = (latitude, longitude) => {
+  const today = new Date()
+  const baseDate = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  const sunRows = []
+  const moonRows = []
+
+  for (let i = 0; i < DAYS_COUNT; i += 1) {
+    const date = new Date(
+      baseDate.getFullYear(),
+      baseDate.getMonth(),
+      baseDate.getDate() + i
+    )
+    const dateKey = getDateKey(date)
+    const sunTimes = SunCalc.getTimes(date, latitude, longitude)
+    const moonIllumination = SunCalc.getMoonIllumination(date)
+    const moonTimes = SunCalc.getMoonTimes(date, latitude, longitude)
+
+    sunRows.push({
+      date: dateKey,
+      astronomical_dawn: formatTime(sunTimes.nightEnd),
+      nautical_dawn: formatTime(sunTimes.nauticalDawn),
+      civil_dawn: formatTime(sunTimes.dawn),
+      sunrise_geometric: formatTime(sunTimes.sunrise),
+      solar_noon: formatTime(sunTimes.solarNoon),
+      sunset_geometric: formatTime(sunTimes.sunset),
+      civil_dusk: formatTime(sunTimes.dusk),
+      nautical_dusk: formatTime(sunTimes.nauticalDusk),
+      astronomical_dusk: formatTime(sunTimes.night),
+      day_length: formatDayLength(sunTimes.sunrise, sunTimes.sunset)
+    })
+
+    moonRows.push({
+      date: dateKey,
+      phase_name: getMoonPhaseName(moonIllumination.phase),
+      illumination: Math.round(moonIllumination.fraction * 100),
+      moon_rise: formatTime(moonTimes.rise),
+      moon_set: formatTime(moonTimes.set)
+    })
+  }
+
+  return { sunRows, moonRows }
+}
 
 function App() {
   const [sunData, setSunData] = useState([])
   const [moonData, setMoonData] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [todayIndex, setTodayIndex] = useState(0)
+  const [status, setStatus] = useState('loading')
+  const [errorMessage, setErrorMessage] = useState('')
   const [currentIndex, setCurrentIndex] = useState(0)
+  const todayIndex = 0
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [sunResponse, moonResponse] = await Promise.all([
-          fetch('/sun.csv'),
-          fetch('/moon.csv')
-        ])
-
-        const sunText = await sunResponse.text()
-        const moonText = await moonResponse.text()
-
-        const sunParsed = parseCSV(sunText)
-        const moonParsed = parseCSV(moonText)
-
-        setSunData(sunParsed)
-        setMoonData(moonParsed)
-
-        // Find today's index
-        const today = getDateKey(new Date())
-        const index = findDateIndex(sunParsed, today)
-        if (index !== -1) {
-          setTodayIndex(index)
-          setCurrentIndex(index)
-        }
-
-        setLoading(false)
-      } catch (error) {
-        console.error('Error loading data:', error)
-        setLoading(false)
-      }
+  const requestLocation = () => {
+    if (!navigator.geolocation) {
+      setStatus('unsupported')
+      return
     }
 
-    loadData()
-  }, [])
+    setStatus('loading')
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords
+        const { sunRows, moonRows } = buildRows(latitude, longitude)
+
+        setSunData(sunRows)
+        setMoonData(moonRows)
+        setCurrentIndex(0)
+        setStatus('ready')
+      },
+      (error) => {
+        if (error.code === error.PERMISSION_DENIED) {
+          setStatus('denied')
+        } else {
+          setStatus('error')
+          setErrorMessage(error.message || 'Unable to access your location.')
+        }
+      }
+    )
+  }
 
   useEffect(() => {
-    setCurrentIndex(todayIndex)
-  }, [todayIndex])
+    requestLocation()
+  }, [])
 
-  if (loading) {
-    return <div className="loading">Loading solar and lunar data...</div>
+  if (status !== 'ready') {
+    const title =
+      status === 'loading'
+        ? 'Requesting location…'
+        : status === 'denied'
+          ? 'Location permission denied'
+          : status === 'unsupported'
+            ? 'Location not supported'
+            : 'Unable to load data'
+
+    const message =
+      status === 'loading'
+        ? 'Please approve the browser prompt to continue.'
+        : status === 'denied'
+          ? 'Enable location access in your browser settings and try again.'
+          : status === 'unsupported'
+            ? 'Your browser does not support location access.'
+            : errorMessage || 'Unable to load solar and lunar data.'
+
+    const canRequest = status === 'denied' || status === 'error'
+    const actionLabel = 'Try again'
+
+    return (
+      <div className="loading">
+        <div className="status-card">
+          <h3>{title}</h3>
+          <p>{message}</p>
+          {canRequest && (
+            <button className="action-button" onClick={requestLocation}>
+              {actionLabel}
+            </button>
+          )}
+        </div>
+      </div>
+    )
   }
 
   const goToPrevious = () => {

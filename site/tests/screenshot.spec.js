@@ -6,10 +6,13 @@ import fs from 'node:fs/promises'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const screenshotDir = path.resolve(__dirname, '..', 'screenshots')
+const testLocation = { latitude: 40.7128, longitude: -74.006 }
 
 const captureScreenshot = async (page, mode, name) => {
   await fs.mkdir(screenshotDir, { recursive: true })
   await page.emulateMedia({ colorScheme: mode })
+  await page.context().setGeolocation(testLocation)
+  await page.context().grantPermissions(['geolocation'])
   await page.goto('/')
   await page.waitForSelector('.day-card', { state: 'visible' })
 

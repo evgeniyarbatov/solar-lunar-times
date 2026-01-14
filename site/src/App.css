@@ -18,6 +18,49 @@
   color: var(--muted);
 }
 
+.status-card {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 2rem 2.5rem;
+  box-shadow: var(--shadow);
+  max-width: 520px;
+}
+
+.status-card h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--text);
+}
+
+.status-card p {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--muted);
+}
+
+.action-button {
+  padding: 0.8rem 1.6rem;
+  border: 1px solid var(--border);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  box-shadow: 0 10px 18px rgba(34, 60, 50, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.action-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 28px rgba(34, 60, 50, 0.25);
+}
+
 .navigation {
   display: flex;
   gap: 1rem;
