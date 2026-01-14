@@ -155,13 +155,13 @@ function App() {
 
       <div className="navigation">
         <button onClick={goToPrevious} disabled={currentIndex === 0}>
-          ← Previous
+          ←
         </button>
         <button onClick={goToToday} className={isToday ? 'active' : ''}>
           Today
         </button>
         <button onClick={goToNext} disabled={currentIndex === sunData.length - 1}>
-          Next →
+          →
         </button>
       </div>
     </div>
