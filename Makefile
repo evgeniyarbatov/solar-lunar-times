@@ -7,6 +7,9 @@ REQUIREMENTS := requirements.txt
 SITE_DIR = site
 TERRAFORM_DIR = terraform
 
+LATITUDE = 20.99483745161213
+LONGITUDE = 105.86796789515121
+
 venv:
 	@python3 -m venv $(VENV_PATH)
 
@@ -20,6 +23,12 @@ run:
 test:
 	cd $(SITE_DIR) && npm test
 	cd $(SITE_DIR) && npm run test:screenshot
+
+sun:
+	@LATITUDE=$(LATITUDE) LONGITUDE=$(LONGITUDE) $(PYTHON) scripts/sun.py
+
+moon:
+	@LATITUDE=$(LATITUDE) LONGITUDE=$(LONGITUDE) $(PYTHON) scripts/moon.py
 
 deploy:
 	cd $(SITE_DIR) && npm run build

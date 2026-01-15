@@ -9,6 +9,9 @@ import {
 } from './dataUtils'
 
 const DAYS_COUNT = 90
+const REFERENCE_LATITUDE = 20.99483745161213
+const REFERENCE_LONGITUDE = 105.86796789515121
+const LOCATION_RANGE = 0.5
 
 const getMoonPhaseName = (phase) => {
   const epsilon = 0.03
@@ -23,7 +26,49 @@ const getMoonPhaseName = (phase) => {
   return 'Waning Crescent'
 }
 
-const buildRows = (latitude, longitude) => {
+const isWithinReferenceRange = (latitude, longitude) =>
+  Math.abs(latitude - REFERENCE_LATITUDE) <= LOCATION_RANGE &&
+  Math.abs(longitude - REFERENCE_LONGITUDE) <= LOCATION_RANGE
+
+const parseCsvRows = (text) => {
+  const lines = text.trim().split(/\r?\n/)
+  const headers = lines[0].split(',')
+
+  return lines.slice(1).map((line) => {
+    const values = line.split(',')
+    return headers.reduce((row, header, index) => {
+      row[header] = values[index] || ''
+      return row
+    }, {})
+  })
+}
+
+const sliceRowsFromToday = (rows) => {
+  const todayKey = getDateKey(new Date())
+  const startIndex = rows.findIndex((row) => row.date === todayKey)
+
+  if (startIndex === -1) return rows.slice(0, DAYS_COUNT)
+
+  return rows.slice(startIndex, startIndex + DAYS_COUNT)
+}
+
+const loadCsvRows = async () => {
+  const [sunResponse, moonResponse] = await Promise.all([
+    fetch('/sun.csv'),
+    fetch('/moon.csv')
+  ])
+  const [sunText, moonText] = await Promise.all([
+    sunResponse.text(),
+    moonResponse.text()
+  ])
+
+  return {
+    sunRows: sliceRowsFromToday(parseCsvRows(sunText)),
+    moonRows: sliceRowsFromToday(parseCsvRows(moonText))
+  }
+}
+
+const buildRowsFromSunCalc = (latitude, longitude) => {
   const today = new Date()
   const baseDate = new Date(today.getFullYear(), today.getMonth(), today.getDate())
   const sunRows = []
@@ -74,6 +119,17 @@ function App() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const todayIndex = 0
 
+  const loadRows = async (latitude, longitude) => {
+    const { sunRows, moonRows } = isWithinReferenceRange(latitude, longitude)
+      ? await loadCsvRows()
+      : buildRowsFromSunCalc(latitude, longitude)
+
+    setSunData(sunRows)
+    setMoonData(moonRows)
+    setCurrentIndex(0)
+    setStatus('ready')
+  }
+
   const requestLocation = () => {
     if (!navigator.geolocation) {
       setStatus('unsupported')
@@ -84,12 +140,10 @@ function App() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords
-        const { sunRows, moonRows } = buildRows(latitude, longitude)
-
-        setSunData(sunRows)
-        setMoonData(moonRows)
-        setCurrentIndex(0)
-        setStatus('ready')
+        loadRows(latitude, longitude).catch((error) => {
+          setStatus('error')
+          setErrorMessage(error.message || 'Unable to load solar and lunar data.')
+        })
       },
       (error) => {
         if (error.code === error.PERMISSION_DENIED) {
