@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 test('shows a denied message when geolocation is blocked', async ({ page }) => {
   await page.goto('/')
   await expect(
-    page.getByRole('heading', { name: 'Location permission denied' })
+    page.getByRole('heading', { name: 'Location required' })
   ).toBeVisible()
   await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible()
 })

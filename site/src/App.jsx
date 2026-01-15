@@ -165,19 +165,19 @@ function App() {
       status === 'loading'
         ? 'Requesting location…'
         : status === 'denied'
-          ? 'Location permission denied'
+          ? 'Location required'
           : status === 'unsupported'
             ? 'Location not supported'
             : 'Unable to load data'
 
     const message =
-      status === 'loading'
-        ? 'Please approve the browser prompt to continue.'
-        : status === 'denied'
-          ? 'Enable location access in your browser settings and try again.'
-          : status === 'unsupported'
-            ? 'Your browser does not support location access.'
-            : errorMessage || 'Unable to load solar and lunar data.'
+      status === 'denied'
+        ? 'We need your location to calculate solar and lunar times.'
+        : status === 'unsupported'
+          ? 'This browser does not support location access.'
+          : status === 'error'
+            ? errorMessage || 'Unable to load solar and lunar data.'
+            : ''
 
     const canRequest = status === 'denied' || status === 'error'
     const actionLabel = 'Try again'
@@ -186,7 +186,7 @@ function App() {
       <div className="loading">
         <div className="status-card">
           <h3>{title}</h3>
-          <p>{message}</p>
+          {message && <p>{message}</p>}
           {canRequest && (
             <button className="action-button" onClick={requestLocation}>
               {actionLabel}
