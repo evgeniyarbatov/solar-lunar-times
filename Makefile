@@ -30,6 +30,9 @@ sun:
 moon:
 	@LATITUDE=$(LATITUDE) LONGITUDE=$(LONGITUDE) $(PYTHON) scripts/moon.py
 
+suncalc:
+	@LATITUDE=$(LATITUDE) LONGITUDE=$(LONGITUDE) TZ=Asia/Ho_Chi_Minh node scripts/suncalc_csv.js
+
 deploy:
 	cd $(SITE_DIR) && npm run build
 	cd $(TERRAFORM_DIR) && terraform apply -auto-approve
