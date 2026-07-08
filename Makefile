@@ -23,12 +23,10 @@ test:
 	cd $(SITE_DIR) && npm test
 	cd $(SITE_DIR) && npm run test:screenshot
 
-sun:
+sun: install
 	@LATITUDE=$(LATITUDE) LONGITUDE=$(LONGITUDE) $(PYTHON) scripts/sun.py
-
-moon:
+moon: install
 	@LATITUDE=$(LATITUDE) LONGITUDE=$(LONGITUDE) $(PYTHON) scripts/moon.py
-
 suncalc:
 	@LATITUDE=$(LATITUDE) LONGITUDE=$(LONGITUDE) TZ=Asia/Ho_Chi_Minh node scripts/suncalc_csv.js
 
