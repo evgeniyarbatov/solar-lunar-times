@@ -11,11 +11,10 @@ LATITUDE = 20.99483745161213
 LONGITUDE = 105.86796789515121
 
 venv:
-	@python3 -m venv $(VENV_PATH)
+	@uv venv $(VENV_PATH)
 
 install: venv
-	@$(PIP) install --disable-pip-version-check -q --upgrade pip
-	@$(PIP) install --disable-pip-version-check -q -r $(REQUIREMENTS)
+	@uv pip install -q -r $(REQUIREMENTS)
 
 run:
 	cd $(SITE_DIR) && npm run dev
