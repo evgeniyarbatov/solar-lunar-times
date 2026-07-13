@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-import ephem
-from datetime import datetime, timedelta
-import pytz
-import os
 import csv
+import os
+from datetime import datetime, timedelta
+
+import ephem
+import pytz
 
 DAYS_COUNT = 90
 
@@ -57,12 +58,8 @@ def calculate_sun_times(observer, date, timezone):
         civil_dawn = observer.next_rising(sun, use_center=True)
         civil_dusk = observer.next_setting(sun, use_center=True)
 
-        results["civil_dawn"] = (
-            civil_dawn.datetime().replace(tzinfo=pytz.utc).astimezone(timezone)
-        )
-        results["civil_dusk"] = (
-            civil_dusk.datetime().replace(tzinfo=pytz.utc).astimezone(timezone)
-        )
+        results["civil_dawn"] = civil_dawn.datetime().replace(tzinfo=pytz.utc).astimezone(timezone)
+        results["civil_dusk"] = civil_dusk.datetime().replace(tzinfo=pytz.utc).astimezone(timezone)
 
         # Reset observer date
         observer.date = date
@@ -98,9 +95,7 @@ def calculate_sun_times(observer, date, timezone):
         observer.date = date
         observer.horizon = "0"
         solar_noon = observer.next_transit(sun)
-        results["solar_noon"] = (
-            solar_noon.datetime().replace(tzinfo=pytz.utc).astimezone(timezone)
-        )
+        results["solar_noon"] = solar_noon.datetime().replace(tzinfo=pytz.utc).astimezone(timezone)
 
     except ephem.CircumpolarError:
         print("Sun is circumpolar (always above or below horizon)")
@@ -144,9 +139,7 @@ def write_to_csv(all_results, filename="site/public/sun.csv"):
                 # Calculate day length
                 day_length_str = None
                 if "sunrise_geometric" in results and "sunset_geometric" in results:
-                    day_length = (
-                        results["sunset_geometric"] - results["sunrise_geometric"]
-                    )
+                    day_length = results["sunset_geometric"] - results["sunrise_geometric"]
                     hours, remainder = divmod(day_length.seconds, 3600)
                     minutes, seconds = divmod(remainder, 60)
                     day_length_str = f"{hours:02d}:{minutes:02d}:{seconds:02d}"

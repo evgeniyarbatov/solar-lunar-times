@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-import ephem
-from datetime import datetime, timedelta
-import pytz
-import os
 import csv
+import os
+from datetime import datetime, timedelta
+
+import ephem
+import pytz
 
 DAYS_COUNT = 90
 
@@ -67,12 +68,11 @@ def moon_phase_name(observer):
 
     if phase_today < 0.25:
         return "Waxing Crescent" if waxing else "Waning Crescent"
-    elif phase_today < 0.5:
+    if phase_today < 0.5:
         return "Waxing Gibbous" if waxing else "Waning Gibbous"
-    elif phase_today < 0.75:
+    if phase_today < 0.75:
         return "Waning Gibbous" if not waxing else "Waxing Gibbous"
-    else:
-        return "Waning Crescent" if not waxing else "Waxing Crescent"
+    return "Waning Crescent" if not waxing else "Waxing Crescent"
 
 
 def calculate_moon_info(date_str):
@@ -106,7 +106,7 @@ def calculate_moon_info(date_str):
         sunrise_local = utc_tz.localize(sunrise_utc).astimezone(hanoi_tz)
     except ephem.CircumpolarError:
         sunrise_local = None
-    except Exception as e:
+    except Exception:
         sunrise_local = None
 
     try:
@@ -116,7 +116,7 @@ def calculate_moon_info(date_str):
         sunset_local = utc_tz.localize(sunset_utc).astimezone(hanoi_tz)
     except ephem.CircumpolarError:
         sunset_local = None
-    except Exception as e:
+    except Exception:
         sunset_local = None
 
     # Calculate moon rise and set times
