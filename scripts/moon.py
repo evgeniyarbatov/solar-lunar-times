@@ -3,6 +3,7 @@
 import csv
 import os
 from datetime import datetime, timedelta
+from typing import Any
 
 import ephem
 import pytz
@@ -10,7 +11,7 @@ import pytz
 DAYS_COUNT = 90
 
 
-def degrees_to_direction(degrees):
+def degrees_to_direction(degrees: float) -> str:
     """Convert degrees to compass direction"""
     directions = [
         "N",
@@ -34,7 +35,7 @@ def degrees_to_direction(degrees):
     return directions[index]
 
 
-def moon_phase_name(observer):
+def moon_phase_name(observer: ephem.Observer) -> str:
     """Determine precise moon phase using ephem events"""
     moon = ephem.Moon(observer)
     phase_today = moon.moon_phase  # illumination fraction
@@ -75,7 +76,7 @@ def moon_phase_name(observer):
     return "Waning Crescent" if not waxing else "Waxing Crescent"
 
 
-def calculate_moon_info(date_str):
+def calculate_moon_info(date_str: str) -> dict[str, Any]:
     """Calculate moon information for a given date"""
 
     # Set up Hanoi timezone
@@ -83,43 +84,22 @@ def calculate_moon_info(date_str):
 
     # Set location
     observer = ephem.Observer()
-    observer.lat = os.environ.get("LATITUDE")
-    observer.lon = os.environ.get("LONGITUDE")
+    observer.lat = os.environ["LATITUDE"]
+    observer.lon = os.environ["LONGITUDE"]
 
     # Set date
     observer.date = date_str
 
-    # Create moon and sun objects
+    # Create moon object
     moon = ephem.Moon(observer)
-    sun = ephem.Sun(observer)
 
     # Calculate moon phase & illumination
     phase = moon.moon_phase
     phase_name = moon_phase_name(observer)
     illumination = phase * 100
 
-    # Calculate sunrise and sunset times
-    try:
-        sunrise = observer.next_rising(sun, start=observer.date)
-        sunrise_utc = ephem.Date(sunrise).datetime()
-        utc_tz = pytz.UTC
-        sunrise_local = utc_tz.localize(sunrise_utc).astimezone(hanoi_tz)
-    except ephem.CircumpolarError:
-        sunrise_local = None
-    except Exception:
-        sunrise_local = None
-
-    try:
-        sunset = observer.next_setting(sun, start=observer.date)
-        sunset_utc = ephem.Date(sunset).datetime()
-        utc_tz = pytz.UTC
-        sunset_local = utc_tz.localize(sunset_utc).astimezone(hanoi_tz)
-    except ephem.CircumpolarError:
-        sunset_local = None
-    except Exception:
-        sunset_local = None
-
     # Calculate moon rise and set times
+    moon_rise_local: datetime | str
     try:
         moon_rise = observer.next_rising(ephem.Moon(), start=observer.date)
         moon_rise_utc = ephem.Date(moon_rise).datetime()
@@ -130,6 +110,7 @@ def calculate_moon_info(date_str):
     except Exception as e:
         moon_rise_local = f"Error calculating rise time: {e}"
 
+    moon_set_local: datetime | str
     try:
         moon_set = observer.next_setting(ephem.Moon(), start=observer.date)
         moon_set_utc = ephem.Date(moon_set).datetime()
@@ -150,7 +131,9 @@ def calculate_moon_info(date_str):
     }
 
 
-def write_to_csv(all_moon_data, filename="site/public/moon.csv"):
+def write_to_csv(
+    all_moon_data: list[dict[str, Any]], filename: str = "site/public/moon.csv"
+) -> None:
     """Write all moon data to a CSV file"""
     if not all_moon_data:
         return
@@ -190,23 +173,23 @@ def write_to_csv(all_moon_data, filename="site/public/moon.csv"):
         print(f"\n❌ Error writing CSV file: {e}")
 
 
-def main():
+def main() -> None:
     """Main function to calculate moon info for next 30 days"""
 
     # Generate dates for next DAYS_COUNT days starting from today
     today = datetime.now()
-    dates = []
+    dates: list[str] = []
     for i in range(DAYS_COUNT):
         date = today + timedelta(days=i)
         date_str = date.strftime("%Y/%m/%d")
         dates.append(date_str)
 
     # Collect all moon data for CSV export
-    all_moon_data = []
+    all_moon_data: list[dict[str, Any]] = []
 
-    for date in dates:
+    for date_str in dates:
         try:
-            moon_info = calculate_moon_info(date)
+            moon_info = calculate_moon_info(date_str)
             all_moon_data.append(moon_info)
         except Exception as e:
             print(f"Error calculating moon info: {e}")

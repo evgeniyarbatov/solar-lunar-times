@@ -2,7 +2,7 @@
 
 import csv
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, tzinfo
 
 import ephem
 import pytz
@@ -10,11 +10,11 @@ import pytz
 DAYS_COUNT = 90
 
 # Location coordinates - get from environment variables (set by Makefile)
-LATITUDE = os.environ.get("LATITUDE")
-LONGITUDE = os.environ.get("LONGITUDE")
+LATITUDE = os.environ["LATITUDE"]
+LONGITUDE = os.environ["LONGITUDE"]
 
 
-def setup_observer():
+def setup_observer() -> tuple[ephem.Observer, tzinfo]:
     """Create an observer object"""
     observer = ephem.Observer()
     observer.lat = LATITUDE
@@ -25,7 +25,9 @@ def setup_observer():
     return observer, hanoi_tz
 
 
-def calculate_sun_times(observer, date, timezone):
+def calculate_sun_times(
+    observer: ephem.Observer, date: str, timezone: tzinfo
+) -> dict[str, datetime]:
     """Calculate various sun-related times for a given date"""
     # Set the date for calculations (start at midnight of the given date)
     observer.date = date
@@ -33,7 +35,7 @@ def calculate_sun_times(observer, date, timezone):
     # Create sun object
     sun = ephem.Sun()
 
-    results = {}
+    results: dict[str, datetime] = {}
 
     try:
         # Standard sunrise and sunset (geometric horizon)
@@ -107,7 +109,10 @@ def calculate_sun_times(observer, date, timezone):
     return results
 
 
-def write_to_csv(all_results, filename="site/public/sun.csv"):
+def write_to_csv(
+    all_results: list[tuple[str, dict[str, datetime]]],
+    filename: str = "site/public/sun.csv",
+) -> None:
     """Write all sun time results to a CSV file"""
     if not all_results:
         return
@@ -169,7 +174,7 @@ def write_to_csv(all_results, filename="site/public/sun.csv"):
         print(f"\n❌ Error writing CSV file: {e}")
 
 
-def main():
+def main() -> None:
     """Main function to calculate and display sun times for next 30 days"""
 
     # Setup observer and timezone
@@ -177,7 +182,7 @@ def main():
 
     # Generate dates for next DAYS_COUNT days starting from today
     today = datetime.now()
-    dates = []
+    dates: list[tuple[str, str]] = []
     for i in range(DAYS_COUNT):
         date = today + timedelta(days=i)
         date_str = date.strftime("%Y/%m/%d")  # This will be used for CSV
@@ -185,8 +190,8 @@ def main():
         dates.append((date_str, display_date))
 
     # Calculate and display results for each date
-    all_results = []
-    for date_str, display_date in dates:
+    all_results: list[tuple[str, dict[str, datetime]]] = []
+    for date_str, _display_date in dates:
         # Calculate sun times
         results = calculate_sun_times(observer, date_str, hanoi_tz)
 

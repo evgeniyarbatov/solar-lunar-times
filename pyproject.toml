@@ -30,3 +30,11 @@ python_version = "3.11"
 strict = true
 warn_return_any = true
 warn_unused_ignores = true
+
+[dependency-groups]
+dev = [
+    "mypy>=2.3.0",
+    "ruff>=0.15.21",
+    "types-ephem>=4.2.0.20260712",
+    "types-pytz>=2026.2.0.20260518",
+]
