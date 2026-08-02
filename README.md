@@ -18,14 +18,16 @@ The site is deployed as a static bundle to an S3 bucket via Terraform.
 
 ```sh
 make install   # uv sync — creates/updates .venv
-make site       # site dev server (npm install + npm run dev)
 
 make sun        # generate site/public/sun.csv (pyephem)
 make moon       # generate site/public/moon.csv (pyephem)
+make site        # site dev server (npm install + npm run dev)
 
 make test       # site unit + screenshot tests
 make run         # generate sun/moon data and deploy (sun + moon + deploy)
 make deploy      # build site, terraform init + apply
 ```
+
+`site/public/*.csv` are generated, gitignored, and required for the site to have data — run `make sun` and `make moon` before `make site`.
 
 Run `make help` for the full command list.
