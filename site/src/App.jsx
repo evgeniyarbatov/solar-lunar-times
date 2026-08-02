@@ -5,6 +5,8 @@ import {
   formatDisplayDate,
   formatTime,
   formatDayLength,
+  formatAzimuth,
+  formatTimeWithAzimuth,
   getDateKey
 } from './dataUtils'
 
@@ -25,6 +27,9 @@ const getMoonPhaseName = (phase) => {
   if (phase < 0.75) return 'Waning Gibbous'
   return 'Waning Crescent'
 }
+
+const toCompassDegrees = (azimuthRadians) =>
+  (azimuthRadians * 180) / Math.PI + 180
 
 const isWithinReferenceRange = (latitude, longitude) =>
   Math.abs(latitude - REFERENCE_LATITUDE) <= LOCATION_RANGE &&
@@ -91,8 +96,16 @@ const buildRowsFromSunCalc = (latitude, longitude) => {
       nautical_dawn: formatTime(sunTimes.nauticalDawn),
       civil_dawn: formatTime(sunTimes.dawn),
       sunrise_geometric: formatTime(sunTimes.sunrise),
+      sunrise_azimuth: formatAzimuth(
+        sunTimes.sunrise &&
+          toCompassDegrees(SunCalc.getPosition(sunTimes.sunrise, latitude, longitude).azimuth)
+      ),
       solar_noon: formatTime(sunTimes.solarNoon),
       sunset_geometric: formatTime(sunTimes.sunset),
+      sunset_azimuth: formatAzimuth(
+        sunTimes.sunset &&
+          toCompassDegrees(SunCalc.getPosition(sunTimes.sunset, latitude, longitude).azimuth)
+      ),
       civil_dusk: formatTime(sunTimes.dusk),
       nautical_dusk: formatTime(sunTimes.nauticalDusk),
       astronomical_dusk: formatTime(sunTimes.night),
@@ -104,7 +117,15 @@ const buildRowsFromSunCalc = (latitude, longitude) => {
       phase_name: getMoonPhaseName(moonIllumination.phase),
       illumination: Math.round(moonIllumination.fraction * 100),
       moon_rise: formatTime(moonTimes.rise),
-      moon_set: formatTime(moonTimes.set)
+      moon_rise_azimuth: formatAzimuth(
+        moonTimes.rise &&
+          toCompassDegrees(SunCalc.getMoonPosition(moonTimes.rise, latitude, longitude).azimuth)
+      ),
+      moon_set: formatTime(moonTimes.set),
+      moon_set_azimuth: formatAzimuth(
+        moonTimes.set &&
+          toCompassDegrees(SunCalc.getMoonPosition(moonTimes.set, latitude, longitude).azimuth)
+      )
     })
   }
 
@@ -244,7 +265,7 @@ function App() {
             </div>
             <div className="time-row">
               <span>Sunrise</span>
-              <span>{sunRow.sunrise_geometric}</span>
+              <span>{formatTimeWithAzimuth(sunRow.sunrise_geometric, sunRow.sunrise_azimuth)}</span>
             </div>
             <div className="time-row">
               <span>Solar Noon</span>
@@ -252,7 +273,7 @@ function App() {
             </div>
             <div className="time-row">
               <span>Sunset</span>
-              <span>{sunRow.sunset_geometric}</span>
+              <span>{formatTimeWithAzimuth(sunRow.sunset_geometric, sunRow.sunset_azimuth)}</span>
             </div>
             <div className="time-row">
               <span>Civil Dusk</span>
@@ -286,11 +307,11 @@ function App() {
                 </div>
                 <div className="time-row">
                   <span>Moonrise</span>
-                  <span>{moonRow.moon_rise}</span>
+                  <span>{formatTimeWithAzimuth(moonRow.moon_rise, moonRow.moon_rise_azimuth)}</span>
                 </div>
                 <div className="time-row">
                   <span>Moonset</span>
-                  <span>{moonRow.moon_set}</span>
+                  <span>{formatTimeWithAzimuth(moonRow.moon_set, moonRow.moon_set_azimuth)}</span>
                 </div>
               </>
             )}

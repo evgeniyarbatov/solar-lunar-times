@@ -1,38 +1,16 @@
 #!/usr/bin/env python3
 
 import csv
+import math
 import os
 from datetime import datetime, timedelta
 from typing import Any
 
 import ephem
 import pytz
+from compass import format_azimuth
 
 DAYS_COUNT = 90
-
-
-def degrees_to_direction(degrees: float) -> str:
-    """Convert degrees to compass direction"""
-    directions = [
-        "N",
-        "NNE",
-        "NE",
-        "ENE",
-        "E",
-        "ESE",
-        "SE",
-        "SSE",
-        "S",
-        "SSW",
-        "SW",
-        "WSW",
-        "W",
-        "WNW",
-        "NW",
-        "NNW",
-    ]
-    index = int((degrees + 11.25) / 22.5) % 16
-    return directions[index]
 
 
 def moon_phase_name(observer: ephem.Observer) -> str:
@@ -100,26 +78,36 @@ def calculate_moon_info(date_str: str) -> dict[str, Any]:
 
     # Calculate moon rise and set times
     moon_rise_local: datetime | str
+    moon_rise_azimuth: str | None
     try:
-        moon_rise = observer.next_rising(ephem.Moon(), start=observer.date)
+        rising_moon = ephem.Moon()
+        moon_rise = observer.next_rising(rising_moon, start=observer.date)
+        moon_rise_azimuth = format_azimuth(math.degrees(float(rising_moon.az)))
         moon_rise_utc = ephem.Date(moon_rise).datetime()
         utc_tz = pytz.UTC
         moon_rise_local = utc_tz.localize(moon_rise_utc).astimezone(hanoi_tz)
     except ephem.CircumpolarError:
         moon_rise_local = "Moon doesn't rise today"
+        moon_rise_azimuth = None
     except Exception as e:
         moon_rise_local = f"Error calculating rise time: {e}"
+        moon_rise_azimuth = None
 
     moon_set_local: datetime | str
+    moon_set_azimuth: str | None
     try:
-        moon_set = observer.next_setting(ephem.Moon(), start=observer.date)
+        setting_moon = ephem.Moon()
+        moon_set = observer.next_setting(setting_moon, start=observer.date)
+        moon_set_azimuth = format_azimuth(math.degrees(float(setting_moon.az)))
         moon_set_utc = ephem.Date(moon_set).datetime()
         utc_tz = pytz.UTC
         moon_set_local = utc_tz.localize(moon_set_utc).astimezone(hanoi_tz)
     except ephem.CircumpolarError:
         moon_set_local = "Moon doesn't set today"
+        moon_set_azimuth = None
     except Exception as e:
         moon_set_local = f"Error calculating set time: {e}"
+        moon_set_azimuth = None
 
     return {
         "date": date_str,
@@ -127,7 +115,9 @@ def calculate_moon_info(date_str: str) -> dict[str, Any]:
         "phase_name": phase_name,
         "illumination": round(illumination),
         "moon_rise": moon_rise_local,
+        "moon_rise_azimuth": moon_rise_azimuth,
         "moon_set": moon_set_local,
+        "moon_set_azimuth": moon_set_azimuth,
     }
 
 
@@ -139,7 +129,15 @@ def write_to_csv(
         return
 
     # Define CSV headers
-    headers = ["date", "phase_name", "illumination", "moon_rise", "moon_set"]
+    headers = [
+        "date",
+        "phase_name",
+        "illumination",
+        "moon_rise",
+        "moon_rise_azimuth",
+        "moon_set",
+        "moon_set_azimuth",
+    ]
 
     try:
         with open(filename, "w", newline="", encoding="utf-8") as csvfile:
@@ -165,7 +163,9 @@ def write_to_csv(
                     "phase_name": moon_info["phase_name"],
                     "illumination": str(moon_info["illumination"]),
                     "moon_rise": moon_rise_str,
+                    "moon_rise_azimuth": moon_info["moon_rise_azimuth"],
                     "moon_set": moon_set_str,
+                    "moon_set_azimuth": moon_info["moon_set_azimuth"],
                 }
 
                 writer.writerow(row_data)

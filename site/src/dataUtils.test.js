@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest'
 import {
   formatTime,
   formatDayLength,
+  formatAzimuth,
+  formatTimeWithAzimuth,
   getDateKey,
   formatDisplayDate
 } from './dataUtils'
@@ -28,5 +30,21 @@ describe('dataUtils', () => {
 
     expect(key).toBe('2024/01/05')
     expect(formatDisplayDate(key)).toBe('January 5, 2024')
+  })
+
+  it('formats azimuth degrees with compass direction', () => {
+    expect(formatAzimuth(0)).toBe('0° N')
+    expect(formatAzimuth(72)).toBe('72° ENE')
+    expect(formatAzimuth(288)).toBe('288° WNW')
+    expect(formatAzimuth(370)).toBe('10° N')
+    expect(formatAzimuth(-10)).toBe('350° N')
+    expect(formatAzimuth(null)).toBe('—')
+    expect(formatAzimuth(NaN)).toBe('—')
+  })
+
+  it('combines time and azimuth for display', () => {
+    expect(formatTimeWithAzimuth('05:41:55', '72° ENE')).toBe('05:41:55 · 72° ENE')
+    expect(formatTimeWithAzimuth('Moon doesn\'t rise today', '')).toBe('Moon doesn\'t rise today')
+    expect(formatTimeWithAzimuth('05:41:55', '—')).toBe('05:41:55')
   })
 })

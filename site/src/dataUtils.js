@@ -26,6 +26,23 @@ export const getDateKey = (date) => {
   return `${year}/${month}/${day}`
 }
 
+const COMPASS_DIRECTIONS = [
+  'N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
+  'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'
+]
+
+export const formatAzimuth = (degrees) => {
+  if (degrees === null || degrees === undefined || Number.isNaN(degrees)) return '—'
+
+  const normalized = ((degrees % 360) + 360) % 360
+  const index = Math.round(normalized / 22.5) % 16
+
+  return `${Math.round(normalized)}° ${COMPASS_DIRECTIONS[index]}`
+}
+
+export const formatTimeWithAzimuth = (time, azimuth) =>
+  azimuth && azimuth !== '—' ? `${time} · ${azimuth}` : time
+
 export const formatDisplayDate = (dateKey) => {
   const [year, month, day] = dateKey.split('/').map(Number)
   return new Date(year, month - 1, day).toLocaleDateString('en-US', {

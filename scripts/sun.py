@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
 import csv
+import math
 import os
 from datetime import datetime, timedelta, tzinfo
 
 import ephem
 import pytz
+from compass import format_azimuth
 
 DAYS_COUNT = 90
 
@@ -27,7 +29,7 @@ def setup_observer() -> tuple[ephem.Observer, tzinfo]:
 
 def calculate_sun_times(
     observer: ephem.Observer, date: str, timezone: tzinfo
-) -> dict[str, datetime]:
+) -> dict[str, datetime | str]:
     """Calculate various sun-related times for a given date"""
     # Set the date for calculations (start at midnight of the given date)
     observer.date = date
@@ -35,13 +37,15 @@ def calculate_sun_times(
     # Create sun object
     sun = ephem.Sun()
 
-    results: dict[str, datetime] = {}
+    results: dict[str, datetime | str] = {}
 
     try:
         # Standard sunrise and sunset (geometric horizon)
         observer.horizon = "0"
         sunrise = observer.next_rising(sun)
+        sunrise_azimuth = math.degrees(float(sun.az))
         sunset = observer.next_setting(sun)
+        sunset_azimuth = math.degrees(float(sun.az))
 
         # Convert from UTC to local timezone
         sunrise_utc = sunrise.datetime().replace(tzinfo=pytz.utc)
@@ -51,6 +55,8 @@ def calculate_sun_times(
 
         results["sunrise_geometric"] = sunrise_local
         results["sunset_geometric"] = sunset_local
+        results["sunrise_azimuth"] = format_azimuth(sunrise_azimuth)
+        results["sunset_azimuth"] = format_azimuth(sunset_azimuth)
 
         # Reset observer date for twilight calculations
         observer.date = date
@@ -110,7 +116,7 @@ def calculate_sun_times(
 
 
 def write_to_csv(
-    all_results: list[tuple[str, dict[str, datetime]]],
+    all_results: list[tuple[str, dict[str, datetime | str]]],
     filename: str = "site/public/sun.csv",
 ) -> None:
     """Write all sun time results to a CSV file"""
@@ -124,8 +130,10 @@ def write_to_csv(
         "nautical_dawn",
         "civil_dawn",
         "sunrise_geometric",
+        "sunrise_azimuth",
         "solar_noon",
         "sunset_geometric",
+        "sunset_azimuth",
         "civil_dusk",
         "nautical_dusk",
         "astronomical_dusk",
@@ -143,14 +151,16 @@ def write_to_csv(
 
                 # Calculate day length
                 day_length_str = None
-                if "sunrise_geometric" in results and "sunset_geometric" in results:
-                    day_length = results["sunset_geometric"] - results["sunrise_geometric"]
+                sunrise_val = results.get("sunrise_geometric")
+                sunset_val = results.get("sunset_geometric")
+                if isinstance(sunrise_val, datetime) and isinstance(sunset_val, datetime):
+                    day_length = sunset_val - sunrise_val
                     hours, remainder = divmod(day_length.seconds, 3600)
                     minutes, seconds = divmod(remainder, 60)
                     day_length_str = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
                 # Create row data
-                row_data = {"date": date_str, "day_length": day_length_str}
+                row_data: dict[str, str | None] = {"date": date_str, "day_length": day_length_str}
 
                 # Add time fields - format as HH:MM:SS strings
                 for key in [
@@ -164,10 +174,13 @@ def write_to_csv(
                     "nautical_dusk",
                     "astronomical_dusk",
                 ]:
-                    if key in results:
-                        row_data[key] = results[key].strftime("%H:%M:%S")
-                    else:
-                        row_data[key] = None
+                    value = results.get(key)
+                    row_data[key] = value.strftime("%H:%M:%S") if isinstance(value, datetime) else None
+
+                # Add azimuth fields - already formatted as "<degrees>° <direction>"
+                for key in ["sunrise_azimuth", "sunset_azimuth"]:
+                    value = results.get(key)
+                    row_data[key] = value if isinstance(value, str) else None
 
                 writer.writerow(row_data)
     except Exception as e:
@@ -190,7 +203,7 @@ def main() -> None:
         dates.append((date_str, display_date))
 
     # Calculate and display results for each date
-    all_results: list[tuple[str, dict[str, datetime]]] = []
+    all_results: list[tuple[str, dict[str, datetime | str]]] = []
     for date_str, _display_date in dates:
         # Calculate sun times
         results = calculate_sun_times(observer, date_str, hanoi_tz)
