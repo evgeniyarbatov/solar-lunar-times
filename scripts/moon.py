@@ -9,6 +9,7 @@ from typing import Any
 import ephem
 import pytz
 from compass import format_azimuth
+from localdate import local_midnight_utc
 
 DAYS_COUNT = 90
 
@@ -65,8 +66,8 @@ def calculate_moon_info(date_str: str) -> dict[str, Any]:
     observer.lat = os.environ["LATITUDE"]
     observer.lon = os.environ["LONGITUDE"]
 
-    # Set date
-    observer.date = date_str
+    # Set date to local midnight of the given date
+    observer.date = local_midnight_utc(date_str, hanoi_tz)
 
     # Create moon object
     moon = ephem.Moon(observer)

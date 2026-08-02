@@ -3,11 +3,12 @@
 import csv
 import math
 import os
-from datetime import datetime, timedelta, tzinfo
+from datetime import datetime, timedelta
 
 import ephem
 import pytz
 from compass import format_azimuth
+from localdate import local_midnight_utc
 
 DAYS_COUNT = 90
 
@@ -16,7 +17,7 @@ LATITUDE = os.environ["LATITUDE"]
 LONGITUDE = os.environ["LONGITUDE"]
 
 
-def setup_observer() -> tuple[ephem.Observer, tzinfo]:
+def setup_observer() -> tuple[ephem.Observer, pytz.BaseTzInfo]:
     """Create an observer object"""
     observer = ephem.Observer()
     observer.lat = LATITUDE
@@ -28,11 +29,12 @@ def setup_observer() -> tuple[ephem.Observer, tzinfo]:
 
 
 def calculate_sun_times(
-    observer: ephem.Observer, date: str, timezone: tzinfo
+    observer: ephem.Observer, date: str, timezone: pytz.BaseTzInfo
 ) -> dict[str, datetime | str]:
     """Calculate various sun-related times for a given date"""
-    # Set the date for calculations (start at midnight of the given date)
-    observer.date = date
+    # Set the date for calculations (start at local midnight of the given date)
+    start = local_midnight_utc(date, timezone)
+    observer.date = start
 
     # Create sun object
     sun = ephem.Sun()
@@ -59,7 +61,7 @@ def calculate_sun_times(
         results["sunset_azimuth"] = format_azimuth(sunset_azimuth)
 
         # Reset observer date for twilight calculations
-        observer.date = date
+        observer.date = start
 
         # Civil twilight (sun 6° below horizon)
         observer.horizon = "-6"
@@ -70,7 +72,7 @@ def calculate_sun_times(
         results["civil_dusk"] = civil_dusk.datetime().replace(tzinfo=pytz.utc).astimezone(timezone)
 
         # Reset observer date
-        observer.date = date
+        observer.date = start
 
         # Nautical twilight (sun 12° below horizon)
         observer.horizon = "-12"
@@ -85,7 +87,7 @@ def calculate_sun_times(
         )
 
         # Reset observer date
-        observer.date = date
+        observer.date = start
 
         # Astronomical twilight (sun 18° below horizon)
         observer.horizon = "-18"
@@ -100,7 +102,7 @@ def calculate_sun_times(
         )
 
         # Reset observer date and calculate solar noon
-        observer.date = date
+        observer.date = start
         observer.horizon = "0"
         solar_noon = observer.next_transit(sun)
         results["solar_noon"] = solar_noon.datetime().replace(tzinfo=pytz.utc).astimezone(timezone)
@@ -175,7 +177,9 @@ def write_to_csv(
                     "astronomical_dusk",
                 ]:
                     value = results.get(key)
-                    row_data[key] = value.strftime("%H:%M:%S") if isinstance(value, datetime) else None
+                    row_data[key] = (
+                        value.strftime("%H:%M:%S") if isinstance(value, datetime) else None
+                    )
 
                 # Add azimuth fields - already formatted as "<degrees>° <direction>"
                 for key in ["sunrise_azimuth", "sunset_azimuth"]:
