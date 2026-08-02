@@ -4,6 +4,7 @@ const port = 4173
 
 export default defineConfig({
   testDir: './tests',
+  outputDir: './node_modules/.cache/playwright-test-results',
   timeout: 30000,
   expect: {
     timeout: 10000
