@@ -21,13 +21,13 @@ sun: install
 moon: install
 	@LATITUDE=$(LATITUDE) LONGITUDE=$(LONGITUDE) uv run python scripts/moon.py
 
-deploy:
+deploy: sun moon
 	cd $(SITE_DIR) && npm install
 	cd $(SITE_DIR) && npm run build
 	cd $(TERRAFORM_DIR) && terraform init
 	cd $(TERRAFORM_DIR) && terraform apply -auto-approve
 
-run: sun moon deploy
+run: deploy
 
 lock:
 	@uv lock
@@ -38,11 +38,11 @@ clean:
 help:
 	@echo "install  - create/update .venv and install dependencies"
 	@echo "site     - run site dev server"
-	@echo "run      - generate sun/moon data and deploy the site"
+	@echo "run      - alias for deploy"
 	@echo "test     - run site tests"
 	@echo "sun      - run sun.py"
 	@echo "moon     - run moon.py"
-	@echo "deploy   - build site and terraform apply"
+	@echo "deploy   - generate sun/moon data, build site, terraform apply"
 	@echo "lock     - refresh uv.lock"
 	@echo "clean    - remove .venv"
 
