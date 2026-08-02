@@ -148,13 +148,10 @@ function App() {
       (error) => {
         if (error.code === error.PERMISSION_DENIED) {
           setStatus('denied')
-          return
-        }
-
-        loadRows(REFERENCE_LATITUDE, REFERENCE_LONGITUDE).catch((loadError) => {
+        } else {
           setStatus('error')
-          setErrorMessage(loadError.message || 'Unable to load solar and lunar data.')
-        })
+          setErrorMessage(error.message || 'Unable to access your location.')
+        }
       }
     )
   }
