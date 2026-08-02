@@ -45,3 +45,5 @@ help:
 	@echo "deploy   - build site and terraform apply"
 	@echo "lock     - refresh uv.lock"
 	@echo "clean    - remove .venv"
+
+.PHONY: site test sun moon deploy run lock clean help
