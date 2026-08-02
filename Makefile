@@ -2,13 +2,13 @@
 SITE_DIR = site
 TERRAFORM_DIR = terraform
 
-LATITUDE = 20.99483745161213
-LONGITUDE = 105.86796789515121
+include .env
 
 install:
 	@uv sync
 
-run:
+site:
+	cd $(SITE_DIR) && npm install
 	cd $(SITE_DIR) && npm run dev
 
 test:
@@ -21,12 +21,13 @@ sun: install
 moon: install
 	@LATITUDE=$(LATITUDE) LONGITUDE=$(LONGITUDE) uv run python scripts/moon.py
 
-suncalc:
-	@LATITUDE=$(LATITUDE) LONGITUDE=$(LONGITUDE) TZ=Asia/Ho_Chi_Minh node scripts/suncalc_csv.js
-
 deploy:
+	cd $(SITE_DIR) && npm install
 	cd $(SITE_DIR) && npm run build
+	cd $(TERRAFORM_DIR) && terraform init
 	cd $(TERRAFORM_DIR) && terraform apply -auto-approve
+
+run: sun moon deploy
 
 lock:
 	@uv lock
@@ -36,11 +37,11 @@ clean:
 
 help:
 	@echo "install  - create/update .venv and install dependencies"
-	@echo "run      - run site dev server"
+	@echo "site     - run site dev server"
+	@echo "run      - generate sun/moon data and deploy the site"
 	@echo "test     - run site tests"
 	@echo "sun      - run sun.py"
 	@echo "moon     - run moon.py"
-	@echo "suncalc  - run suncalc_csv.js"
 	@echo "deploy   - build site and terraform apply"
 	@echo "lock     - refresh uv.lock"
 	@echo "clean    - remove .venv"

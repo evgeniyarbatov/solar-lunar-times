@@ -9,8 +9,8 @@ import {
 } from './dataUtils'
 
 const DAYS_COUNT = 90
-const REFERENCE_LATITUDE = 20.99483745161213
-const REFERENCE_LONGITUDE = 105.86796789515121
+const REFERENCE_LATITUDE = Number(import.meta.env.LATITUDE)
+const REFERENCE_LONGITUDE = Number(import.meta.env.LONGITUDE)
 const LOCATION_RANGE = 0.5
 
 const getMoonPhaseName = (phase) => {

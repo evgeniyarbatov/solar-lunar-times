@@ -1,5 +1,0 @@
-- [x] Build lightweight static site to display sun and moon information for today / scroll to any day
-- [ ] Use airflow scripts to regularly update the static site
-- [x] Change the green theme of the site
-- [ ] Make sure test coverage is enough
-- [x] How to make it work for any location?
