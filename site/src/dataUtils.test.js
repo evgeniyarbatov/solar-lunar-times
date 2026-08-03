@@ -5,7 +5,8 @@ import {
   formatAzimuth,
   formatTimeWithAzimuth,
   getDateKey,
-  formatDisplayDate
+  formatDisplayDate,
+  formatEventInstant,
 } from './dataUtils'
 
 describe('dataUtils', () => {
@@ -44,7 +45,21 @@ describe('dataUtils', () => {
 
   it('combines time and azimuth for display', () => {
     expect(formatTimeWithAzimuth('05:41:55', '72° ENE')).toBe('05:41:55 · 72° ENE')
-    expect(formatTimeWithAzimuth('Moon doesn\'t rise today', '')).toBe('Moon doesn\'t rise today')
+    expect(formatTimeWithAzimuth("Moon doesn't rise today", '')).toBe("Moon doesn't rise today")
     expect(formatTimeWithAzimuth('05:41:55', '—')).toBe('05:41:55')
+  })
+
+  it('labels same-day event times without a day suffix', () => {
+    const now = new Date(2026, 5, 15, 12, 0, 0)
+    const event = new Date(2026, 5, 15, 18, 30, 0)
+
+    expect(formatEventInstant(event, now)).toBe(formatTime(event))
+  })
+
+  it('labels tomorrow events and attaches azimuth', () => {
+    const now = new Date(2026, 5, 15, 22, 0, 0)
+    const event = new Date(2026, 5, 16, 5, 41, 55)
+
+    expect(formatEventInstant(event, now, 72)).toBe(`${formatTime(event)} · Tomorrow · 72° ENE`)
   })
 })

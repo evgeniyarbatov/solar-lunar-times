@@ -43,11 +43,39 @@ export const formatAzimuth = (degrees) => {
 export const formatTimeWithAzimuth = (time, azimuth) =>
   azimuth && azimuth !== '—' ? `${time} · ${azimuth}` : time
 
-export const formatDisplayDate = (dateKey) => {
-  const [year, month, day] = dateKey.split('/').map(Number)
-  return new Date(year, month - 1, day).toLocaleDateString('en-US', {
+export const formatDisplayDate = (date) => {
+  if (typeof date === 'string') {
+    const [year, month, day] = date.split('/').map(Number)
+    return new Date(year, month - 1, day).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  }
+
+  return date.toLocaleDateString('en-US', {
+    weekday: 'long',
     month: 'long',
     day: 'numeric',
-    year: 'numeric'
+    year: 'numeric',
   })
+}
+
+export const formatEventInstant = (eventTime, now = new Date(), azimuth = null) => {
+  if (!eventTime) return '—'
+
+  const timePart = formatTime(eventTime)
+  const todayKey = getDateKey(now)
+  const eventKey = getDateKey(eventTime)
+
+  let label = timePart
+  if (eventKey !== todayKey) {
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+    label =
+      eventKey === getDateKey(tomorrow)
+        ? `${timePart} · Tomorrow`
+        : `${timePart} · ${eventTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+  }
+
+  return formatTimeWithAzimuth(label, azimuth != null ? formatAzimuth(azimuth) : null)
 }

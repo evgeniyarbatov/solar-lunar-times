@@ -1,157 +1,22 @@
-import { useState, useEffect } from 'react'
-import SunCalc from 'suncalc'
+import { useState, useEffect, useCallback } from 'react'
 import './App.css'
-import {
-  formatDisplayDate,
-  formatTime,
-  formatDayLength,
-  formatAzimuth,
-  formatTimeWithAzimuth,
-  getDateKey
-} from './dataUtils'
+import { computeSnapshot } from './astro'
+import { formatDisplayDate, formatEventInstant } from './dataUtils'
 
-const DAYS_COUNT = 90
-const REFERENCE_LATITUDE = Number(import.meta.env.LATITUDE)
-const REFERENCE_LONGITUDE = Number(import.meta.env.LONGITUDE)
-const LOCATION_RANGE = 0.5
-
-const getMoonPhaseName = (phase) => {
-  const epsilon = 0.03
-
-  if (phase < epsilon || phase > 1 - epsilon) return 'New Moon'
-  if (Math.abs(phase - 0.25) < epsilon) return 'First Quarter'
-  if (Math.abs(phase - 0.5) < epsilon) return 'Full Moon'
-  if (Math.abs(phase - 0.75) < epsilon) return 'Last Quarter'
-  if (phase < 0.25) return 'Waxing Crescent'
-  if (phase < 0.5) return 'Waxing Gibbous'
-  if (phase < 0.75) return 'Waning Gibbous'
-  return 'Waning Crescent'
-}
-
-const toCompassDegrees = (azimuthRadians) =>
-  (azimuthRadians * 180) / Math.PI + 180
-
-const isWithinReferenceRange = (latitude, longitude) =>
-  Math.abs(latitude - REFERENCE_LATITUDE) <= LOCATION_RANGE &&
-  Math.abs(longitude - REFERENCE_LONGITUDE) <= LOCATION_RANGE
-
-const parseCsvRows = (text) => {
-  const lines = text.trim().split(/\r?\n/)
-  const headers = lines[0].split(',')
-
-  return lines.slice(1).map((line) => {
-    const values = line.split(',')
-    return headers.reduce((row, header, index) => {
-      row[header] = values[index] || ''
-      return row
-    }, {})
-  })
-}
-
-const sliceRowsFromToday = (rows) => {
-  const todayKey = getDateKey(new Date())
-  const startIndex = rows.findIndex((row) => row.date === todayKey)
-
-  if (startIndex === -1) return rows.slice(0, DAYS_COUNT)
-
-  return rows.slice(startIndex, startIndex + DAYS_COUNT)
-}
-
-const loadCsvRows = async () => {
-  const [sunResponse, moonResponse] = await Promise.all([
-    fetch('/sun.csv'),
-    fetch('/moon.csv')
-  ])
-  const [sunText, moonText] = await Promise.all([
-    sunResponse.text(),
-    moonResponse.text()
-  ])
-
-  return {
-    sunRows: sliceRowsFromToday(parseCsvRows(sunText)),
-    moonRows: sliceRowsFromToday(parseCsvRows(moonText))
-  }
-}
-
-const buildRowsFromSunCalc = (latitude, longitude) => {
-  const today = new Date()
-  const baseDate = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-  const sunRows = []
-  const moonRows = []
-
-  for (let i = 0; i < DAYS_COUNT; i += 1) {
-    const date = new Date(
-      baseDate.getFullYear(),
-      baseDate.getMonth(),
-      baseDate.getDate() + i
-    )
-    const dateKey = getDateKey(date)
-    const sunTimes = SunCalc.getTimes(date, latitude, longitude)
-    const moonIllumination = SunCalc.getMoonIllumination(date)
-    const moonTimes = SunCalc.getMoonTimes(date, latitude, longitude)
-
-    sunRows.push({
-      date: dateKey,
-      astronomical_dawn: formatTime(sunTimes.nightEnd),
-      nautical_dawn: formatTime(sunTimes.nauticalDawn),
-      civil_dawn: formatTime(sunTimes.dawn),
-      sunrise_geometric: formatTime(sunTimes.sunrise),
-      sunrise_azimuth: formatAzimuth(
-        sunTimes.sunrise &&
-          toCompassDegrees(SunCalc.getPosition(sunTimes.sunrise, latitude, longitude).azimuth)
-      ),
-      solar_noon: formatTime(sunTimes.solarNoon),
-      sunset_geometric: formatTime(sunTimes.sunset),
-      sunset_azimuth: formatAzimuth(
-        sunTimes.sunset &&
-          toCompassDegrees(SunCalc.getPosition(sunTimes.sunset, latitude, longitude).azimuth)
-      ),
-      civil_dusk: formatTime(sunTimes.dusk),
-      nautical_dusk: formatTime(sunTimes.nauticalDusk),
-      astronomical_dusk: formatTime(sunTimes.night),
-      day_length: formatDayLength(sunTimes.sunrise, sunTimes.sunset)
-    })
-
-    moonRows.push({
-      date: dateKey,
-      phase_name: getMoonPhaseName(moonIllumination.phase),
-      illumination: Math.round(moonIllumination.fraction * 100),
-      moon_rise: formatTime(moonTimes.rise),
-      moon_rise_azimuth: formatAzimuth(
-        moonTimes.rise &&
-          toCompassDegrees(SunCalc.getMoonPosition(moonTimes.rise, latitude, longitude).azimuth)
-      ),
-      moon_set: formatTime(moonTimes.set),
-      moon_set_azimuth: formatAzimuth(
-        moonTimes.set &&
-          toCompassDegrees(SunCalc.getMoonPosition(moonTimes.set, latitude, longitude).azimuth)
-      )
-    })
-  }
-
-  return { sunRows, moonRows }
-}
+const REFRESH_MS = 30_000
 
 function App() {
-  const [sunData, setSunData] = useState([])
-  const [moonData, setMoonData] = useState([])
+  const [coords, setCoords] = useState(null)
+  const [snapshot, setSnapshot] = useState(null)
   const [status, setStatus] = useState('loading')
   const [errorMessage, setErrorMessage] = useState('')
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const todayIndex = 0
 
-  const loadRows = async (latitude, longitude) => {
-    const { sunRows, moonRows } = isWithinReferenceRange(latitude, longitude)
-      ? await loadCsvRows()
-      : buildRowsFromSunCalc(latitude, longitude)
-
-    setSunData(sunRows)
-    setMoonData(moonRows)
-    setCurrentIndex(0)
+  const refreshSnapshot = useCallback((latitude, longitude) => {
+    setSnapshot(computeSnapshot(latitude, longitude, new Date()))
     setStatus('ready')
-  }
+  }, [])
 
-  const requestLocation = () => {
+  const requestLocation = useCallback(() => {
     if (!navigator.geolocation) {
       setStatus('unsupported')
       return
@@ -161,10 +26,8 @@ function App() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords
-        loadRows(latitude, longitude).catch((error) => {
-          setStatus('error')
-          setErrorMessage(error.message || 'Unable to load solar and lunar data.')
-        })
+        setCoords({ latitude, longitude })
+        refreshSnapshot(latitude, longitude)
       },
       (error) => {
         if (error.code === error.PERMISSION_DENIED) {
@@ -175,13 +38,30 @@ function App() {
         }
       }
     )
-  }
+  }, [refreshSnapshot])
 
   useEffect(() => {
     requestLocation()
-  }, [])
+  }, [requestLocation])
 
-  if (status !== 'ready') {
+  useEffect(() => {
+    if (!coords) return undefined
+
+    const tick = () => refreshSnapshot(coords.latitude, coords.longitude)
+    const intervalId = window.setInterval(tick, REFRESH_MS)
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') tick()
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+
+    return () => {
+      window.clearInterval(intervalId)
+      document.removeEventListener('visibilitychange', onVisibility)
+    }
+  }, [coords, refreshSnapshot])
+
+  if (status !== 'ready' || !snapshot) {
     const title =
       status === 'loading'
         ? 'Requesting location…'
@@ -201,7 +81,6 @@ function App() {
             : ''
 
     const canRequest = status === 'denied' || status === 'error'
-    const actionLabel = 'Try again'
 
     return (
       <div className="loading">
@@ -210,7 +89,7 @@ function App() {
           {message && <p>{message}</p>}
           {canRequest && (
             <button className="action-button" onClick={requestLocation}>
-              {actionLabel}
+              Try again
             </button>
           )}
         </div>
@@ -218,117 +97,72 @@ function App() {
     )
   }
 
-  const goToPrevious = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1)
-    }
-  }
-
-  const goToNext = () => {
-    if (currentIndex < sunData.length - 1) {
-      setCurrentIndex(currentIndex + 1)
-    }
-  }
-
-  const goToToday = () => {
-    setCurrentIndex(todayIndex)
-  }
-
-  if (sunData.length === 0) return null
-
-  const sunRow = sunData[currentIndex]
-  const moonRow = moonData[currentIndex]
-  const isToday = currentIndex === todayIndex
-  const formattedDate = formatDisplayDate(sunRow.date)
+  const { now, solarEvents, dayLength, lunar } = snapshot
 
   return (
     <div className="app">
-      <div className={`day-card ${isToday ? 'today' : ''}`}>
+      <div className="day-card today">
         <div className="date">
-          <h3>{formattedDate}</h3>
+          <h3>{formatDisplayDate(now)}</h3>
+          <span className="today-badge">Upcoming</span>
         </div>
 
         <div className="times-grid">
           <div className="sun-times">
             <h4>☀️ Solar Times</h4>
-            <div className="time-row">
-              <span>Astronomical Dawn</span>
-              <span>{sunRow.astronomical_dawn}</span>
-            </div>
-            <div className="time-row">
-              <span>Nautical Dawn</span>
-              <span>{sunRow.nautical_dawn}</span>
-            </div>
-            <div className="time-row">
-              <span>Civil Dawn</span>
-              <span>{sunRow.civil_dawn}</span>
-            </div>
-            <div className="time-row">
-              <span>Sunrise</span>
-              <span>{formatTimeWithAzimuth(sunRow.sunrise_geometric, sunRow.sunrise_azimuth)}</span>
-            </div>
-            <div className="time-row">
-              <span>Solar Noon</span>
-              <span>{sunRow.solar_noon}</span>
-            </div>
-            <div className="time-row">
-              <span>Sunset</span>
-              <span>{formatTimeWithAzimuth(sunRow.sunset_geometric, sunRow.sunset_azimuth)}</span>
-            </div>
-            <div className="time-row">
-              <span>Civil Dusk</span>
-              <span>{sunRow.civil_dusk}</span>
-            </div>
-            <div className="time-row">
-              <span>Nautical Dusk</span>
-              <span>{sunRow.nautical_dusk}</span>
-            </div>
-            <div className="time-row">
-              <span>Astronomical Dusk</span>
-              <span>{sunRow.astronomical_dusk}</span>
-            </div>
+            {solarEvents.length === 0 ? (
+              <div className="time-row">
+                <span>No upcoming solar events</span>
+                <span>—</span>
+              </div>
+            ) : (
+              solarEvents.map((event) => (
+                <div className="time-row" key={event.id}>
+                  <span>{event.label}</span>
+                  <span>{formatEventInstant(event.time, now, event.azimuth)}</span>
+                </div>
+              ))
+            )}
             <div className="time-row">
               <span>Day Length</span>
-              <span>{sunRow.day_length}</span>
+              <span>{dayLength}</span>
             </div>
           </div>
 
           <div className="moon-times">
             <h4>🌙 Lunar Times</h4>
-            {moonRow && (
-              <>
-                <div className="time-row">
-                  <span>Phase</span>
-                  <span>{moonRow.phase_name}</span>
-                </div>
-                <div className="time-row">
-                  <span>Illumination</span>
-                  <span>{moonRow.illumination}%</span>
-                </div>
-                <div className="time-row">
-                  <span>Moonrise</span>
-                  <span>{formatTimeWithAzimuth(moonRow.moon_rise, moonRow.moon_rise_azimuth)}</span>
-                </div>
-                <div className="time-row">
-                  <span>Moonset</span>
-                  <span>{formatTimeWithAzimuth(moonRow.moon_set, moonRow.moon_set_azimuth)}</span>
-                </div>
-              </>
+            <div className="time-row">
+              <span>Phase</span>
+              <span>{lunar.phaseName}</span>
+            </div>
+            <div className="time-row">
+              <span>Illumination</span>
+              <span>{lunar.illumination}%</span>
+            </div>
+            {lunar.nextRise && (
+              <div className="time-row">
+                <span>Moonrise</span>
+                <span>
+                  {formatEventInstant(lunar.nextRise.time, now, lunar.nextRise.azimuth)}
+                </span>
+              </div>
+            )}
+            {lunar.nextSet && (
+              <div className="time-row">
+                <span>Moonset</span>
+                <span>
+                  {formatEventInstant(lunar.nextSet.time, now, lunar.nextSet.azimuth)}
+                </span>
+              </div>
+            )}
+            {!lunar.nextRise && !lunar.nextSet && (
+              <div className="time-row">
+                <span>No rise/set soon</span>
+                <span>—</span>
+              </div>
             )}
           </div>
         </div>
-      </div>
-
-      <div className="navigation">
-        <button onClick={goToPrevious} disabled={currentIndex === 0}>
-          ←
-        </button>
-        <button onClick={goToToday} className={isToday ? 'active' : ''}>
-          Today
-        </button>
-        <button onClick={goToNext} disabled={currentIndex === sunData.length - 1}>
-          →
-        </button>
       </div>
     </div>
   )

@@ -1,33 +1,25 @@
 # Solar and Lunar Times
 
-Site showing exact sunrise/sunset and moonrise/moonset times for each day, for planning runs and moon watching.
+Static site showing upcoming sunrise/sunset/twilight and moon rise/set times for your current location.
 
 ## How it works
 
-Location is set once in `.env` (`LATITUDE`, `LONGITUDE`). Sun/moon times are computed for that location by `scripts/sun.py` / `scripts/moon.py` (Python, `pyephem`) and written to `site/public/sun.csv`, `site/public/moon.csv`, which a React/Vite site reads and displays.
+The browser requests geolocation, then computes solar and lunar events client-side with [suncalc](https://github.com/mourner/suncalc) (Jean Meeus algorithms). Only events still in the future are shown; the view refreshes periodically so past events drop off without redeploying.
 
-The site is deployed as a static bundle to an S3 bucket via Terraform.
+Deployed as a static bundle to S3 via Terraform.
 
 ## Prerequisites
 
-- [uv](https://docs.astral.sh/uv) (Python deps + running Python scripts)
 - Node.js + npm (site)
 - Terraform + AWS credentials (deploy only)
 
 ## Running
 
 ```sh
-make install   # uv sync — creates/updates .venv
-
-make sun        # generate site/public/sun.csv (pyephem)
-make moon       # generate site/public/moon.csv (pyephem)
-make site        # site dev server (npm install + npm run dev)
-
-make test       # site unit + screenshot tests
-make run         # generate sun/moon data and deploy (sun + moon + deploy)
-make deploy      # build site, terraform init + apply
+make site     # site dev server (npm install + npm run dev)
+make test     # site unit + screenshot tests
+make deploy   # build site, terraform init + apply
+make run      # alias for deploy
 ```
-
-`site/public/*.csv` are generated, gitignored, and required for the site to have data — run `make sun` and `make moon` before `make site`.
 
 Run `make help` for the full command list.
