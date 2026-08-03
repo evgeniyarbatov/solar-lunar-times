@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import './App.css'
 import { computeSnapshot } from './astro'
-import { formatDisplayDate, formatEventInstant } from './dataUtils'
+import { formatEventInstant } from './dataUtils'
 
 const REFRESH_MS = 30_000
 
@@ -118,16 +118,11 @@ function App() {
     )
   }
 
-  const { now, solarEvents, dayLength, lunar } = snapshot
+  const { solarEvents, dayLength, lunar } = snapshot
 
   return (
     <div className="app">
       <div className="day-card today">
-        <div className="date">
-          <h3>{formatDisplayDate(now)}</h3>
-          <span className="today-badge">Upcoming</span>
-        </div>
-
         <div className="times-grid">
           <div className="sun-times">
             <h4>☀️ Solar Times</h4>
