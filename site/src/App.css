@@ -120,7 +120,7 @@
 
 @media (max-width: 768px) {
   .app {
-    padding: 1.5rem 1rem;
+    padding: 0;
   }
 
   .times-grid {
