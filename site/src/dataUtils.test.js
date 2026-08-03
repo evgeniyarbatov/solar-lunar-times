@@ -49,17 +49,11 @@ describe('dataUtils', () => {
     expect(formatTimeWithAzimuth('05:41:55', '—')).toBe('05:41:55')
   })
 
-  it('labels same-day event times without a day suffix', () => {
-    const now = new Date(2026, 5, 15, 12, 0, 0)
-    const event = new Date(2026, 5, 15, 18, 30, 0)
-
-    expect(formatEventInstant(event, now)).toBe(formatTime(event))
-  })
-
-  it('labels tomorrow events and attaches azimuth', () => {
-    const now = new Date(2026, 5, 15, 22, 0, 0)
+  it('formats event instants as time only, with optional azimuth', () => {
     const event = new Date(2026, 5, 16, 5, 41, 55)
 
-    expect(formatEventInstant(event, now, 72)).toBe(`${formatTime(event)} · Tomorrow · 72° ENE`)
+    expect(formatEventInstant(event)).toBe(formatTime(event))
+    expect(formatEventInstant(event, 72)).toBe(`${formatTime(event)} · 72° ENE`)
+    expect(formatEventInstant(null)).toBe('—')
   })
 })

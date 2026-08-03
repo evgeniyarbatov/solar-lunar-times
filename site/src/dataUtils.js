@@ -61,21 +61,11 @@ export const formatDisplayDate = (date) => {
   })
 }
 
-export const formatEventInstant = (eventTime, now = new Date(), azimuth = null) => {
+export const formatEventInstant = (eventTime, azimuth = null) => {
   if (!eventTime) return '—'
 
-  const timePart = formatTime(eventTime)
-  const todayKey = getDateKey(now)
-  const eventKey = getDateKey(eventTime)
-
-  let label = timePart
-  if (eventKey !== todayKey) {
-    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
-    label =
-      eventKey === getDateKey(tomorrow)
-        ? `${timePart} · Tomorrow`
-        : `${timePart} · ${eventTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
-  }
-
-  return formatTimeWithAzimuth(label, azimuth != null ? formatAzimuth(azimuth) : null)
+  return formatTimeWithAzimuth(
+    formatTime(eventTime),
+    azimuth != null ? formatAzimuth(azimuth) : null
+  )
 }
