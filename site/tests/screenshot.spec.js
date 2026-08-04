@@ -14,7 +14,7 @@ const captureScreenshot = async (page, mode, name) => {
   await page.context().setGeolocation(testLocation)
   await page.context().grantPermissions(['geolocation'])
   await page.goto('/')
-  await page.waitForSelector('.day-card', { state: 'visible' })
+  await page.waitForSelector('.now-panel', { state: 'visible' })
 
   const filePath = path.join(screenshotDir, `${name}-${mode}.png`)
   await page.screenshot({ path: filePath, fullPage: true })

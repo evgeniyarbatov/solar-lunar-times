@@ -1,10 +1,19 @@
 import { describe, it, expect } from 'vitest'
 import {
   formatTime,
+  formatShortTime,
   formatDayLength,
   formatAzimuth,
+  formatAltitude,
   formatTimeWithAzimuth,
+  formatDurationMs,
+  formatCountdown,
+  formatSignedDurationMs,
+  formatTimeRange,
   getDateKey,
+  toIsoDate,
+  parseIsoDate,
+  startOfLocalDay,
   formatDisplayDate,
   formatEventInstant,
 } from './dataUtils'
@@ -15,6 +24,7 @@ describe('dataUtils', () => {
 
     expect(formatTime(date)).toBe('09:05:02')
     expect(formatTime(null)).toBe('—')
+    expect(formatShortTime(date)).toBe('09:05')
   })
 
   it('formats day length values', () => {
@@ -25,12 +35,31 @@ describe('dataUtils', () => {
     expect(formatDayLength(null, end)).toBe('—')
   })
 
-  it('builds date keys and display labels', () => {
+  it('formats durations and countdowns', () => {
+    expect(formatDurationMs(2 * 3600000 + 14 * 60000)).toBe('2h 14m')
+    expect(formatDurationMs(45 * 60000 + 3 * 1000)).toBe('45m 03s')
+    expect(formatDurationMs(900)).toBe('0s')
+
+    const now = new Date(2026, 5, 15, 12, 0, 0)
+    const later = new Date(2026, 5, 15, 14, 14, 0)
+    expect(formatCountdown(later, now)).toBe('in 2h 14m')
+    expect(formatCountdown(now, now)).toBe('now')
+    expect(formatSignedDurationMs(2 * 60 * 1000)).toBe('+2m 00s vs yesterday')
+    expect(formatSignedDurationMs(-90 * 1000)).toBe('−1m 30s vs yesterday')
+    expect(formatSignedDurationMs(0)).toBe('same as yesterday')
+  })
+
+  it('builds date keys, ISO dates, and display labels', () => {
     const date = new Date(2024, 0, 5)
     const key = getDateKey(date)
 
     expect(key).toBe('2024/01/05')
+    expect(toIsoDate(date)).toBe('2024-01-05')
+    expect(parseIsoDate('2024-01-05')).toEqual(startOfLocalDay(date))
+    expect(parseIsoDate('not-a-date')).toBeNull()
+    expect(parseIsoDate('2024-13-40')).toBeNull()
     expect(formatDisplayDate(key)).toBe('January 5, 2024')
+    expect(formatDisplayDate('2024-01-05')).toMatch(/January 5, 2024/)
   })
 
   it('formats azimuth degrees with compass direction', () => {
@@ -41,6 +70,12 @@ describe('dataUtils', () => {
     expect(formatAzimuth(-10)).toBe('350° N')
     expect(formatAzimuth(null)).toBe('—')
     expect(formatAzimuth(NaN)).toBe('—')
+  })
+
+  it('formats altitude with sign', () => {
+    expect(formatAltitude(12.34)).toBe('+12.3°')
+    expect(formatAltitude(-4.2)).toBe('-4.2°')
+    expect(formatAltitude(null)).toBe('—')
   })
 
   it('combines time and azimuth for display', () => {
@@ -55,5 +90,12 @@ describe('dataUtils', () => {
     expect(formatEventInstant(event)).toBe(formatTime(event))
     expect(formatEventInstant(event, 72)).toBe(`${formatTime(event)} · 72° ENE`)
     expect(formatEventInstant(null)).toBe('—')
+  })
+
+  it('formats time ranges', () => {
+    const start = new Date(2026, 5, 15, 5, 10, 0)
+    const end = new Date(2026, 5, 15, 6, 5, 0)
+    expect(formatTimeRange(start, end)).toBe('05:10–06:05')
+    expect(formatTimeRange(null, end)).toBe('—')
   })
 })
