@@ -175,31 +175,36 @@ function App() {
     <div className="app">
       <section className="panel now-panel">
         <div className="panel-head">
+          <h2>Now</h2>
           <span className={`band-pill band-${sky.sun.band.id}`}>{sky.sun.band.label}</span>
         </div>
 
         <div className="now-grid">
           <div className="sky-card">
-            <h3>☀️</h3>
+            <h3>☀️ Sun</h3>
             <div className="metric-row">
-              <span>Alt</span>
+              <span>Altitude</span>
               <span>{formatAltitude(sky.sun.altitude)}</span>
             </div>
             <div className="metric-row">
-              <span>Az</span>
+              <span>Azimuth</span>
               <span>{formatAzimuth(sky.sun.azimuth)}</span>
             </div>
           </div>
 
           <div className="sky-card">
-            <h3>🌙 {sky.moon.isUp ? 'Up' : 'Down'}</h3>
+            <h3>🌙 Moon</h3>
             <div className="metric-row">
-              <span>Alt</span>
+              <span>Altitude</span>
               <span>{formatAltitude(sky.moon.altitude)}</span>
             </div>
             <div className="metric-row">
-              <span>Az</span>
+              <span>Azimuth</span>
               <span>{formatAzimuth(sky.moon.azimuth)}</span>
+            </div>
+            <div className="metric-row">
+              <span>Status</span>
+              <span>{sky.moon.isUp ? 'Up' : 'Down'}</span>
             </div>
             <div className="metric-row">
               <span>Phase</span>
@@ -209,8 +214,9 @@ function App() {
         </div>
 
         <div className="countdown-block">
+          <h3>Next up</h3>
           {countdowns.length === 0 ? (
-            <div className="time-row muted-row"><span>No upcoming</span><span>—</span></div>
+            <div className="time-row muted-row"><span>No upcoming events</span><span>—</span></div>
           ) : (
             countdowns.map((item) => (
               <div className="time-row countdown-row" key={item.id}>
@@ -223,39 +229,52 @@ function App() {
             ))
           )}
         </div>
+      </section>
 
-        <div className="hours-grid">
-          <div className="time-row">
-            <span>Golden am</span>
-            <span>{formatTimeRange(goldenBlue.morningGolden?.start, goldenBlue.morningGolden?.end)}</span>
+      <section className="panel hours-panel">
+        <div className="times-grid compact">
+          <div>
+            <h3>Golden hour</h3>
+            <div className="time-row">
+              <span>Morning</span>
+              <span>{formatTimeRange(goldenBlue.morningGolden?.start, goldenBlue.morningGolden?.end)}</span>
+            </div>
+            <div className="time-row">
+              <span>Evening</span>
+              <span>{formatTimeRange(goldenBlue.eveningGolden?.start, goldenBlue.eveningGolden?.end)}</span>
+            </div>
           </div>
-          <div className="time-row">
-            <span>Golden pm</span>
-            <span>{formatTimeRange(goldenBlue.eveningGolden?.start, goldenBlue.eveningGolden?.end)}</span>
-          </div>
-          <div className="time-row">
-            <span>Blue am</span>
-            <span>{formatTimeRange(goldenBlue.morningBlue?.start, goldenBlue.morningBlue?.end)}</span>
-          </div>
-          <div className="time-row">
-            <span>Blue pm</span>
-            <span>{formatTimeRange(goldenBlue.eveningBlue?.start, goldenBlue.eveningBlue?.end)}</span>
+          <div>
+            <h3>Blue hour</h3>
+            <div className="time-row">
+              <span>Morning</span>
+              <span>{formatTimeRange(goldenBlue.morningBlue?.start, goldenBlue.morningBlue?.end)}</span>
+            </div>
+            <div className="time-row">
+              <span>Evening</span>
+              <span>{formatTimeRange(goldenBlue.eveningBlue?.start, goldenBlue.eveningBlue?.end)}</span>
+            </div>
           </div>
         </div>
       </section>
 
       <section className="panel moon-panel">
+        <div className="panel-head">
+          <h2>Moon</h2>
+        </div>
+
         <div className="times-grid compact">
           <div>
+            <h3>Tonight</h3>
             {lunar.nextRise && (
               <div className="time-row">
-                <span>Rise</span>
+                <span>Moonrise</span>
                 <span>{formatEventInstant(lunar.nextRise.time, lunar.nextRise.azimuth)}</span>
               </div>
             )}
             {lunar.nextSet && (
               <div className="time-row">
-                <span>Set</span>
+                <span>Moonset</span>
                 <span>{formatEventInstant(lunar.nextSet.time, lunar.nextSet.azimuth)}</span>
               </div>
             )}
@@ -270,9 +289,10 @@ function App() {
           </div>
 
           <div>
+            <h3>Next phases</h3>
             {principalPhases.map((phase) => (
               <div className="time-row" key={phase.id}>
-                <span>{phase.name.replace(' Moon', '').replace(' Quarter', ' Q')}</span>
+                <span>{phase.name}</span>
                 <span>
                   {formatMonthDay(phase.time)} · {formatShortTime(phase.time)}
                 </span>
@@ -285,7 +305,7 @@ function App() {
           <div>
             <h3>Moon after dark</h3>
             {skyWindows.moonWatch.length === 0 ? (
-              <div className="time-row muted-row"><span>—</span></div>
+              <div className="time-row muted-row"><span>None soon</span><span>—</span></div>
             ) : (
               skyWindows.moonWatch.map((iv) => (
                 <div className="time-row" key={`mw-${iv.start.getTime()}`}>
@@ -298,7 +318,7 @@ function App() {
           <div>
             <h3>Dark sky</h3>
             {skyWindows.darkSky.length === 0 ? (
-              <div className="time-row muted-row"><span>—</span></div>
+              <div className="time-row muted-row"><span>None soon</span><span>—</span></div>
             ) : (
               skyWindows.darkSky.map((iv) => (
                 <div className="time-row" key={`ds-${iv.start.getTime()}`}>
@@ -312,6 +332,10 @@ function App() {
       </section>
 
       <section className="panel calendar-panel">
+        <div className="panel-head">
+          <h2>Calendar</h2>
+        </div>
+
         <div className="calendar-grid">
           {calendar.map((day) => (
             <button
@@ -322,11 +346,13 @@ function App() {
             >
               <span className="cal-wd">{formatWeekdayShort(day.date)}</span>
               <span className="cal-md">{formatMonthDay(day.date)}</span>
-              <span className="cal-phase">{day.illumination}%</span>
-              <span className="cal-line">↑{formatShortTime(day.sunrise)}</span>
-              <span className="cal-line">↓{formatShortTime(day.sunset)}</span>
+              <span className="cal-phase" title={day.phaseName}>
+                {day.illumination}%
+              </span>
+              <span className="cal-line">↑ {formatShortTime(day.sunrise)}</span>
+              <span className="cal-line">↓ {formatShortTime(day.sunset)}</span>
               <span className="cal-line moon">
-                ☾{day.moonAlwaysUp ? 'up' : day.moonAlwaysDown ? '—' : formatShortTime(day.moonrise)}
+                ☾ {day.moonAlwaysUp ? 'up' : day.moonAlwaysDown ? 'down' : formatShortTime(day.moonrise)}
               </span>
             </button>
           ))}
@@ -337,13 +363,14 @@ function App() {
             <h3>{formatDisplayDate(dayDetail.date)}</h3>
             {dayDetail.isoDate !== todayIso && (
               <button type="button" className="text-button" onClick={() => selectDay(todayIso)}>
-                Today
+                Back to today
               </button>
             )}
           </div>
 
           <div className="times-grid">
-            <div>
+            <div className="sun-times">
+              <h4>☀️ Solar</h4>
               {dayDetail.solarEvents.map((event) => (
                 <div className={`time-row ${event.past ? 'is-past' : ''}`} key={event.id}>
                   <span>{event.label}</span>
@@ -351,12 +378,13 @@ function App() {
                 </div>
               ))}
               <div className="time-row">
-                <span>Length</span>
+                <span>Day length</span>
                 <span>{dayDetail.dayLength}</span>
               </div>
             </div>
 
-            <div>
+            <div className="moon-times">
+              <h4>🌙 Lunar</h4>
               <div className="time-row">
                 <span>Phase</span>
                 <span>{dayDetail.lunar.phaseName} · {dayDetail.lunar.illumination}%</span>
@@ -365,9 +393,9 @@ function App() {
                 <div className="time-row">
                   <span>
                     {dayDetail.lunar.moonAlwaysUp
-                      ? 'Always up'
+                      ? 'Moon always up'
                       : dayDetail.lunar.moonAlwaysDown
-                        ? 'Always down'
+                        ? 'Moon always down'
                         : 'No rise/set'}
                   </span>
                   <span>—</span>
