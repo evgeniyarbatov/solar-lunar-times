@@ -691,22 +691,15 @@ export const getDayDetail = (latitude, longitude, day, now = new Date()) => {
   }
 }
 
-export const computeSnapshot = (latitude, longitude, now = new Date(), options = {}) => {
-  const selectedDate = options.date ? startOfLocalDay(options.date) : startOfLocalDay(now)
-
-  return {
-    now,
-    sky: getSkyState(latitude, longitude, now),
-    countdowns: getCountdowns(latitude, longitude, now),
-    solarEvents: getUpcomingSolar(latitude, longitude, now),
-    dayLength: getTodayDayLength(latitude, longitude, now),
-    goldenBlue: getGoldenBlueHours(latitude, longitude, now),
-    lunar: getUpcomingLunar(latitude, longitude, now),
-    principalPhases: getNextPrincipalPhases(now, 4),
-    moonTransit: getMoonTransit(latitude, longitude, now),
-    skyWindows: getDarkAndMoonWindows(latitude, longitude, now, 2),
-    calendar: getCalendarDays(latitude, longitude, now, 14),
-    dayDetail: getDayDetail(latitude, longitude, selectedDate, now),
-    selectedDate,
-  }
-}
+export const computeSnapshot = (latitude, longitude, now = new Date()) => ({
+  now,
+  sky: getSkyState(latitude, longitude, now),
+  countdowns: getCountdowns(latitude, longitude, now),
+  solarEvents: getUpcomingSolar(latitude, longitude, now),
+  dayLength: getTodayDayLength(latitude, longitude, now),
+  goldenBlue: getGoldenBlueHours(latitude, longitude, now),
+  lunar: getUpcomingLunar(latitude, longitude, now),
+  principalPhases: getNextPrincipalPhases(now, 4),
+  moonTransit: getMoonTransit(latitude, longitude, now),
+  skyWindows: getDarkAndMoonWindows(latitude, longitude, now, 1),
+})

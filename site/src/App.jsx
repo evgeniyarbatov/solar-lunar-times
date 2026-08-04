@@ -5,14 +5,11 @@ import {
   formatAltitude,
   formatAzimuth,
   formatCountdown,
-  formatDisplayDate,
   formatEventInstant,
   formatMonthDay,
   formatShortTime,
   formatTimeRange,
   formatWeekdayShort,
-  parseIsoDate,
-  toIsoDate,
 } from './dataUtils'
 
 const REFRESH_MS = 30_000
@@ -34,25 +31,11 @@ const geoErrorMessage = (error) => {
   return error.message || 'Unable to access your location.'
 }
 
-const readDateFromUrl = () => {
-  if (typeof window === 'undefined') return null
-  return parseIsoDate(new URLSearchParams(window.location.search).get('date'))
-}
-
-const writeDateToUrl = (date) => {
-  if (typeof window === 'undefined') return
-  const url = new URL(window.location.href)
-  if (date) url.searchParams.set('date', toIsoDate(date))
-  else url.searchParams.delete('date')
-  window.history.replaceState({}, '', url)
-}
-
 function App() {
   const [coords, setCoords] = useState(null)
   const [snapshot, setSnapshot] = useState(null)
   const [status, setStatus] = useState('loading')
   const [errorMessage, setErrorMessage] = useState('')
-  const [selectedDate, setSelectedDate] = useState(() => readDateFromUrl())
 
   const requestLocation = useCallback(() => {
     if (!navigator.geolocation) {
@@ -88,9 +71,7 @@ function App() {
     if (!coords) return undefined
 
     const tick = () => {
-      setSnapshot(computeSnapshot(coords.latitude, coords.longitude, new Date(), {
-        date: selectedDate || undefined,
-      }))
+      setSnapshot(computeSnapshot(coords.latitude, coords.longitude, new Date()))
     }
     tick()
 
@@ -105,20 +86,7 @@ function App() {
       window.clearInterval(intervalId)
       document.removeEventListener('visibilitychange', onVisibility)
     }
-  }, [coords, selectedDate])
-
-  const selectDay = (isoDate) => {
-    const parsed = parseIsoDate(isoDate)
-    if (!parsed) return
-    const todayIso = toIsoDate(new Date())
-    if (isoDate === todayIso) {
-      setSelectedDate(null)
-      writeDateToUrl(null)
-    } else {
-      setSelectedDate(parsed)
-      writeDateToUrl(parsed)
-    }
-  }
+  }, [coords])
 
   if (status !== 'ready' || !snapshot) {
     const title =
@@ -164,12 +132,7 @@ function App() {
     principalPhases,
     moonTransit,
     skyWindows,
-    calendar,
-    dayDetail,
   } = snapshot
-
-  const activeIso = dayDetail.isoDate
-  const todayIso = toIsoDate(snapshot.now)
 
   return (
     <div className="app">
@@ -327,92 +290,6 @@ function App() {
                 </div>
               ))
             )}
-          </div>
-        </div>
-      </section>
-
-      <section className="panel calendar-panel">
-        <div className="panel-head">
-          <h2>Calendar</h2>
-        </div>
-
-        <div className="calendar-grid">
-          {calendar.map((day) => (
-            <button
-              type="button"
-              key={day.isoDate}
-              className={`cal-day ${day.isoDate === activeIso ? 'is-selected' : ''} ${day.isoDate === todayIso ? 'is-today' : ''}`}
-              onClick={() => selectDay(day.isoDate)}
-            >
-              <span className="cal-wd">{formatWeekdayShort(day.date)}</span>
-              <span className="cal-md">{formatMonthDay(day.date)}</span>
-              <span className="cal-phase" title={day.phaseName}>
-                {day.illumination}%
-              </span>
-              <span className="cal-line">↑ {formatShortTime(day.sunrise)}</span>
-              <span className="cal-line">↓ {formatShortTime(day.sunset)}</span>
-              <span className="cal-line moon">
-                ☾ {day.moonAlwaysUp ? 'up' : day.moonAlwaysDown ? 'down' : formatShortTime(day.moonrise)}
-              </span>
-            </button>
-          ))}
-        </div>
-
-        <div className="day-detail">
-          <div className="panel-head">
-            <h3>{formatDisplayDate(dayDetail.date)}</h3>
-            {dayDetail.isoDate !== todayIso && (
-              <button type="button" className="text-button" onClick={() => selectDay(todayIso)}>
-                Back to today
-              </button>
-            )}
-          </div>
-
-          <div className="times-grid">
-            <div className="sun-times">
-              <h4>☀️ Solar</h4>
-              {dayDetail.solarEvents.map((event) => (
-                <div className={`time-row ${event.past ? 'is-past' : ''}`} key={event.id}>
-                  <span>{event.label}</span>
-                  <span>{formatEventInstant(event.time, event.azimuth)}</span>
-                </div>
-              ))}
-              <div className="time-row">
-                <span>Day length</span>
-                <span>{dayDetail.dayLength}</span>
-              </div>
-            </div>
-
-            <div className="moon-times">
-              <h4>🌙 Lunar</h4>
-              <div className="time-row">
-                <span>Phase</span>
-                <span>{dayDetail.lunar.phaseName} · {dayDetail.lunar.illumination}%</span>
-              </div>
-              {dayDetail.moonEvents.length === 0 ? (
-                <div className="time-row">
-                  <span>
-                    {dayDetail.lunar.moonAlwaysUp
-                      ? 'Moon always up'
-                      : dayDetail.lunar.moonAlwaysDown
-                        ? 'Moon always down'
-                        : 'No rise/set'}
-                  </span>
-                  <span>—</span>
-                </div>
-              ) : (
-                dayDetail.moonEvents.map((event) => (
-                  <div className={`time-row ${event.past ? 'is-past' : ''}`} key={event.id}>
-                    <span>{event.label}</span>
-                    <span>
-                      {event.altitude != null
-                        ? `${formatShortTime(event.time)} · ${formatAltitude(event.altitude)}`
-                        : formatEventInstant(event.time, event.azimuth)}
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
           </div>
         </div>
       </section>
