@@ -277,13 +277,12 @@ describe('getDayDetail', () => {
 
 describe('computeSnapshot', () => {
   it('assembles the full planning payload', () => {
-    const snap = computeSnapshot(LAT, LON, NY_AFTERNOON, { runPreset: 'daylight' })
+    const snap = computeSnapshot(LAT, LON, NY_AFTERNOON)
     expect(snap.sky.sun.band).toBeTruthy()
     expect(snap.countdowns.length).toBeGreaterThan(0)
-    expect(snap.solarStrip).toHaveLength(7)
+    expect(snap.goldenBlue.morningGolden).toBeTruthy()
     expect(snap.calendar).toHaveLength(14)
     expect(snap.principalPhases).toHaveLength(4)
-    expect(snap.runWindow).not.toBeNull()
     expect(snap.dayDetail.isoDate).toBe(toIsoDate(NY_AFTERNOON))
   })
 })

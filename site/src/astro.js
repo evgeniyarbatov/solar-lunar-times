@@ -693,7 +693,6 @@ export const getDayDetail = (latitude, longitude, day, now = new Date()) => {
 
 export const computeSnapshot = (latitude, longitude, now = new Date(), options = {}) => {
   const selectedDate = options.date ? startOfLocalDay(options.date) : startOfLocalDay(now)
-  const runPreset = options.runPreset || 'civil'
 
   return {
     now,
@@ -701,10 +700,7 @@ export const computeSnapshot = (latitude, longitude, now = new Date(), options =
     countdowns: getCountdowns(latitude, longitude, now),
     solarEvents: getUpcomingSolar(latitude, longitude, now),
     dayLength: getTodayDayLength(latitude, longitude, now),
-    dayLengthTrend: getDayLengthTrend(latitude, longitude, now),
     goldenBlue: getGoldenBlueHours(latitude, longitude, now),
-    solarStrip: getSolarStrip(latitude, longitude, now, 7),
-    runWindow: getRunWindow(latitude, longitude, runPreset, now),
     lunar: getUpcomingLunar(latitude, longitude, now),
     principalPhases: getNextPrincipalPhases(now, 4),
     moonTransit: getMoonTransit(latitude, longitude, now),
