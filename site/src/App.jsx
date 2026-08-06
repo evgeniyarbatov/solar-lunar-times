@@ -134,6 +134,22 @@ function App() {
 
   return (
     <div className="app">
+      <section className="panel events-panel">
+        {countdowns.length === 0 ? (
+          <div className="time-row muted-row"><span>No upcoming events</span><span>—</span></div>
+        ) : (
+          countdowns.map((item) => (
+            <div className="time-row countdown-row" key={item.id}>
+              <span>{item.label}</span>
+              <span>
+                <strong>{formatCountdown(item.time, snapshot.now)}</strong>
+                <span className="subtle"> · {formatShortTime(item.time)}</span>
+              </span>
+            </div>
+          ))
+        )}
+      </section>
+
       <section className="panel now-panel">
         <div className="now-grid">
           <div className="sky-card">
@@ -167,22 +183,6 @@ function App() {
               <span>{sky.moon.phaseName} · {sky.moon.illumination}%</span>
             </div>
           </div>
-        </div>
-
-        <div className="countdown-block">
-          {countdowns.length === 0 ? (
-            <div className="time-row muted-row"><span>No upcoming events</span><span>—</span></div>
-          ) : (
-            countdowns.map((item) => (
-              <div className="time-row countdown-row" key={item.id}>
-                <span>{item.label}</span>
-                <span>
-                  <strong>{formatCountdown(item.time, snapshot.now)}</strong>
-                  <span className="subtle"> · {formatShortTime(item.time)}</span>
-                </span>
-              </div>
-            ))
-          )}
         </div>
       </section>
 

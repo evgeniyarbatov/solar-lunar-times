@@ -128,12 +128,6 @@
   font-weight: 500;
 }
 
-.countdown-block {
-  margin-top: 1rem;
-  padding-top: 0.35rem;
-  border-top: 1px solid rgba(127, 140, 132, 0.18);
-}
-
 .countdown-row strong {
   font-weight: 700;
   color: var(--accent);
