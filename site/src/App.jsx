@@ -186,33 +186,6 @@ function App() {
         </div>
       </section>
 
-      <section className="panel hours-panel">
-        <div className="times-grid compact">
-          <div>
-            <h3>Golden hour</h3>
-            <div className="time-row">
-              <span>Morning</span>
-              <span>{formatTimeRange(goldenBlue.morningGolden?.start, goldenBlue.morningGolden?.end)}</span>
-            </div>
-            <div className="time-row">
-              <span>Evening</span>
-              <span>{formatTimeRange(goldenBlue.eveningGolden?.start, goldenBlue.eveningGolden?.end)}</span>
-            </div>
-          </div>
-          <div>
-            <h3>Blue hour</h3>
-            <div className="time-row">
-              <span>Morning</span>
-              <span>{formatTimeRange(goldenBlue.morningBlue?.start, goldenBlue.morningBlue?.end)}</span>
-            </div>
-            <div className="time-row">
-              <span>Evening</span>
-              <span>{formatTimeRange(goldenBlue.eveningBlue?.start, goldenBlue.eveningBlue?.end)}</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section className="panel moon-panel">
         <div className="times-grid compact">
           <div>
@@ -249,6 +222,33 @@ function App() {
                 </span>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="panel hours-panel">
+        <div className="times-grid compact">
+          <div>
+            <h3>Golden hour</h3>
+            <div className="time-row">
+              <span>Morning</span>
+              <span>{formatTimeRange(goldenBlue.morningGolden?.start, goldenBlue.morningGolden?.end)}</span>
+            </div>
+            <div className="time-row">
+              <span>Evening</span>
+              <span>{formatTimeRange(goldenBlue.eveningGolden?.start, goldenBlue.eveningGolden?.end)}</span>
+            </div>
+          </div>
+          <div>
+            <h3>Blue hour</h3>
+            <div className="time-row">
+              <span>Morning</span>
+              <span>{formatTimeRange(goldenBlue.morningBlue?.start, goldenBlue.morningBlue?.end)}</span>
+            </div>
+            <div className="time-row">
+              <span>Evening</span>
+              <span>{formatTimeRange(goldenBlue.eveningBlue?.start, goldenBlue.eveningBlue?.end)}</span>
+            </div>
           </div>
         </div>
       </section>
