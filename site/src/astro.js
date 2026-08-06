@@ -701,5 +701,4 @@ export const computeSnapshot = (latitude, longitude, now = new Date()) => ({
   lunar: getUpcomingLunar(latitude, longitude, now),
   principalPhases: getNextPrincipalPhases(now, 4),
   moonTransit: getMoonTransit(latitude, longitude, now),
-  skyWindows: getDarkAndMoonWindows(latitude, longitude, now, 1),
 })

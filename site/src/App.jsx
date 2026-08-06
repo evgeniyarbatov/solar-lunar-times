@@ -9,7 +9,6 @@ import {
   formatMonthDay,
   formatShortTime,
   formatTimeRange,
-  formatWeekdayShort,
 } from './dataUtils'
 
 const REFRESH_MS = 30_000
@@ -131,17 +130,11 @@ function App() {
     lunar,
     principalPhases,
     moonTransit,
-    skyWindows,
   } = snapshot
 
   return (
     <div className="app">
       <section className="panel now-panel">
-        <div className="panel-head">
-          <h2>Now</h2>
-          <span className={`band-pill band-${sky.sun.band.id}`}>{sky.sun.band.label}</span>
-        </div>
-
         <div className="now-grid">
           <div className="sky-card">
             <h3>☀️ Sun</h3>
@@ -177,7 +170,6 @@ function App() {
         </div>
 
         <div className="countdown-block">
-          <h3>Next up</h3>
           {countdowns.length === 0 ? (
             <div className="time-row muted-row"><span>No upcoming events</span><span>—</span></div>
           ) : (
@@ -222,10 +214,6 @@ function App() {
       </section>
 
       <section className="panel moon-panel">
-        <div className="panel-head">
-          <h2>Moon</h2>
-        </div>
-
         <div className="times-grid compact">
           <div>
             <h3>Tonight</h3>
@@ -261,35 +249,6 @@ function App() {
                 </span>
               </div>
             ))}
-          </div>
-        </div>
-
-        <div className="windows-grid">
-          <div>
-            <h3>Moon after dark</h3>
-            {skyWindows.moonWatch.length === 0 ? (
-              <div className="time-row muted-row"><span>None soon</span><span>—</span></div>
-            ) : (
-              skyWindows.moonWatch.map((iv) => (
-                <div className="time-row" key={`mw-${iv.start.getTime()}`}>
-                  <span>{formatWeekdayShort(iv.start)}</span>
-                  <span>{formatTimeRange(iv.start, iv.end)}</span>
-                </div>
-              ))
-            )}
-          </div>
-          <div>
-            <h3>Dark sky</h3>
-            {skyWindows.darkSky.length === 0 ? (
-              <div className="time-row muted-row"><span>None soon</span><span>—</span></div>
-            ) : (
-              skyWindows.darkSky.map((iv) => (
-                <div className="time-row" key={`ds-${iv.start.getTime()}`}>
-                  <span>{formatWeekdayShort(iv.start)}</span>
-                  <span>{formatTimeRange(iv.start, iv.end)}</span>
-                </div>
-              ))
-            )}
           </div>
         </div>
       </section>

@@ -282,6 +282,6 @@ describe('computeSnapshot', () => {
     expect(snap.countdowns.length).toBeGreaterThan(0)
     expect(snap.goldenBlue.morningGolden).toBeTruthy()
     expect(snap.principalPhases).toHaveLength(4)
-    expect(snap.skyWindows).toBeTruthy()
+    expect(snap.moonTransit).toBeTruthy()
   })
 })
