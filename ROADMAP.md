@@ -8,6 +8,31 @@ Static React app. Browser geolocation → client-side [suncalc](https://github.c
 
 Useful as a glanceable “what’s next,” thin for planning.
 
+## Why keep going
+
+This is the only repo in the account that turns astronomical calculation
+into something checked in under a second, on a phone, before a decision
+(run now or wait? full moon walk tonight?) — every other astronomy project
+here is analysis or art, not a live tool you'd actually open outdoors.
+
+## What it opens up
+
+Multi-day look-ahead turns this from "what's happening right now" into
+"which evening this week is worth planning around" — the missing piece
+that would let it actually answer the planning use case in the goals table
+below, not just the glanceable one.
+
+## Connects to
+
+- **sun-year** — same solar-position math (rise/set azimuth, day length)
+  at a yearly-chart grain instead of live/next-event; worth sharing the
+  underlying astronomy calculations rather than reimplementing suncalc
+  logic twice.
+- **[private]** — direct consumer: route planning by sun position
+  needs exactly this repo's live azimuth data.
+- **stargazing-on-the-run**, **[private]** — same "sky state during
+  a run" question, oriented toward stars/planets instead of sun/moon.
+
 ## Goals
 
 | Use case | Need |
