@@ -28,10 +28,8 @@ below, not just the glanceable one.
   at a yearly-chart grain instead of live/next-event; worth sharing the
   underlying astronomy calculations rather than reimplementing suncalc
   logic twice.
-- **[private]** — direct consumer: route planning by sun position
-  needs exactly this repo's live azimuth data.
-- **stargazing-on-the-run**, **[private]** — same "sky state during
-  a run" question, oriented toward stars/planets instead of sun/moon.
+- **stargazing-on-the-run** — same "sky state during a run" question,
+  oriented toward stars/planets instead of sun/moon.
 
 ## Goals
 
