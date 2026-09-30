@@ -1,12 +1,14 @@
 # Solar and Lunar Times
 
-Static site showing upcoming sunrise/sunset/twilight and moon rise/set times for your current location.
+Static site showing upcoming sunrise/sunset/twilight, moon rise/set and phases, live sun/moon position, and golden/blue hour for your current location.
+
+Live: https://evgeniyarbatov.github.io/solar-lunar-times/
 
 ## How it works
 
 The browser requests geolocation, then computes solar and lunar events client-side with [suncalc](https://github.com/mourner/suncalc) (Jean Meeus algorithms). Only events still in the future are shown; the view refreshes periodically so past events drop off without redeploying.
 
-Deployed to GitHub Pages on every push to `main`: https://evgeniyarbatov.github.io/solar-lunar-times/
+A GitHub Actions workflow runs the unit tests, builds, and deploys to GitHub Pages on every push to `main`.
 
 ## Prerequisites
 

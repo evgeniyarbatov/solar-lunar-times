@@ -1,6 +1,6 @@
 # solar-lunar-times
 
-Static site showing upcoming sunrise/sunset/twilight and moon phase/rise/set for the user's location, deployed to GitHub Pages.
+Static site showing upcoming sunrise/sunset/twilight, moon phase/rise/set, live sun/moon position, and golden/blue hour for the user's location, deployed to GitHub Pages at https://evgeniyarbatov.github.io/solar-lunar-times/.
 
 ## Structure
 
