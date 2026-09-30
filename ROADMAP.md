@@ -4,7 +4,7 @@ Make this site the go-to phone check before a run or a night of moon watching: a
 
 ## Today
 
-Static React app. Browser geolocation → client-side [suncalc](https://github.com/mourner/suncalc) → one card of **next** solar events (twilights through astronomical dusk, with sunrise/sunset azimuth) and lunar phase / illumination / next rise-set with azimuth. Refreshes every 30s. Deployed to S3.
+Static React app. Browser geolocation → client-side [suncalc](https://github.com/mourner/suncalc) → one card of **next** solar events (twilights through astronomical dusk, with sunrise/sunset azimuth) and lunar phase / illumination / next rise-set with azimuth. Refreshes every 30s. Deployed to GitHub Pages.
 
 Useful as a glanceable “what’s next,” thin for planning.
 
