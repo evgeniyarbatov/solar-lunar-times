@@ -10,4 +10,4 @@ Static site showing upcoming sunrise/sunset/twilight, moon phase/rise/set, live 
 ## Commands
 
 - `make site` — site dev server
-- `make test` — site unit tests + Playwright screenshot test
+- `make test` — site unit tests + Playwright screenshot test (installs npm deps, Chromium and its system libraries)
