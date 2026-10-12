@@ -4,6 +4,12 @@ Static site showing upcoming sunrise/sunset/twilight, moon rise/set and phases, 
 
 Live: https://evgeniyarbatov.github.io/solar-lunar-times/
 
+## Status
+
+| Folder | Status | Last touched | Next step |
+|---|---|---|---|
+| root | active | 2026-10-06 | Note in the UI that terrain occlusion isn't modelled |
+
 ## How it works
 
 The browser requests geolocation, then computes solar and lunar events client-side with [suncalc](https://github.com/mourner/suncalc) (Jean Meeus algorithms). Only events still in the future are shown; the view refreshes periodically so past events drop off without redeploying.
